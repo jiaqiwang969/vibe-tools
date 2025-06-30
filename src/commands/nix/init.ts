@@ -1,21 +1,19 @@
 import type { Command, CommandGenerator, CommandOptions } from '../../types';
 import { NixUtils } from './utils.ts';
 import { createProvider } from '../../providers/base.ts';
-import { loadConfig } from '../../config.ts';
-import { promises as fs } from 'node:fs';
 
 export class InitCommand implements Command {
   async *execute(query: string, options: CommandOptions): CommandGenerator {
     try {
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       if (!envInfo.hasNix) {
         yield NixUtils.getHelpMessage(envInfo);
         return;
       }
 
       const projectType = query.trim() || envInfo.projectType || 'Generic';
-      
+
       yield `🚀 为 ${projectType} 项目生成 flake.nix...\n`;
 
       // 如果已有 flake.nix，询问是否覆盖
@@ -42,9 +40,8 @@ export class InitCommand implements Command {
 
 请只返回 flake.nix 文件的内容，不要包含其他解释文字。`;
 
-      const config = loadConfig();
       const provider = createProvider(options.provider || 'apizh-coding');
-      
+
       const flakeContent = await provider.executePrompt(prompt, {
         model: options.model || 'claude-sonnet-4-20250514',
         maxTokens: options.maxTokens || 2000,
@@ -53,13 +50,13 @@ export class InitCommand implements Command {
 
       // 清理生成的内容，确保只包含 nix 代码
       const cleanedContent = this.cleanFlakeContent(flakeContent);
-      
+
       // 写入文件
       await NixUtils.writeFlakeFile(cleanedContent);
-      
+
       // 检查 git 状态
       const gitInfo = await NixUtils.detectGitStatus(process.cwd());
-      
+
       yield `✅ flake.nix 已生成！
 
 📋 生成的配置包含：
@@ -90,10 +87,9 @@ export class InitCommand implements Command {
 - 建议创建 .envrc 文件以启用 direnv 自动环境加载：
   echo "use flake" > .envrc
   direnv allow`;
-
     } catch (error) {
       yield `❌ 生成 flake.nix 失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Init command error:', error);
       }
@@ -103,7 +99,7 @@ export class InitCommand implements Command {
   private cleanFlakeContent(content: string): string {
     // 移除可能的 markdown 代码块标记
     let cleaned = content.replace(/```nix\n?/g, '').replace(/```\n?/g, '');
-    
+
     // 确保以 { 开头
     if (!cleaned.trim().startsWith('{')) {
       const startIndex = cleaned.indexOf('{');
@@ -111,7 +107,7 @@ export class InitCommand implements Command {
         cleaned = cleaned.substring(startIndex);
       }
     }
-    
+
     return cleaned.trim();
   }
-} 
+}

@@ -1,7 +1,6 @@
 import type { Command, CommandGenerator, CommandOptions } from '../../types';
 import { NixUtils } from './utils.ts';
 import { createProvider } from '../../providers/base.ts';
-import { loadConfig } from '../../config.ts';
 
 export class TroubleshootCommand implements Command {
   async *execute(query: string, options: CommandOptions): CommandGenerator {
@@ -9,7 +8,7 @@ export class TroubleshootCommand implements Command {
       yield `🔧 诊断 Nix 环境问题...\n`;
 
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       // 基础环境检查
       yield `📋 环境诊断报告:\n`;
       yield `- Nix 安装状态: ${envInfo.hasNix ? '✅ 已安装' : '❌ 未安装'}\n`;
@@ -20,7 +19,7 @@ export class TroubleshootCommand implements Command {
       // 如果有特定问题描述，使用 AI 诊断
       if (query.trim()) {
         yield `🤖 AI 诊断中...\n`;
-        
+
         let context = `环境信息：
 - Nix 已安装: ${envInfo.hasNix}
 - 有 flake.nix: ${envInfo.hasFlake}
@@ -30,7 +29,7 @@ export class TroubleshootCommand implements Command {
           try {
             const flakeContent = await NixUtils.readFlakeFile();
             context += `\n\nflake.nix 内容:\n\`\`\`nix\n${flakeContent}\n\`\`\``;
-          } catch (e) {
+          } catch (_e) {
             context += '\n\n注意：无法读取 flake.nix 文件';
           }
         }
@@ -49,9 +48,8 @@ ${context}
 
 用中文回答，提供具体可执行的解决方案。`;
 
-        const config = loadConfig();
         const provider = createProvider(options.provider || 'apizh-analysis');
-        
+
         const diagnosis = await provider.executePrompt(prompt, {
           model: options.model || 'claude-sonnet-4-20250514',
           maxTokens: options.maxTokens || 3000,
@@ -62,28 +60,28 @@ ${context}
       } else {
         // 通用诊断检查
         yield `🔍 执行通用检查...\n`;
-        
+
         const issues: string[] = [];
-        
+
         if (!envInfo.hasNix) {
           issues.push('❌ Nix 未安装');
         }
-        
+
         if (!envInfo.hasFlake) {
           issues.push('❌ 当前目录没有 flake.nix 文件');
         }
-        
+
         if (envInfo.hasFlake) {
           try {
             const validation = await NixUtils.validateFlake();
             if (!validation.isValid) {
               issues.push(`❌ Flake 验证失败: ${validation.error}`);
             }
-          } catch (e) {
+          } catch (_e) {
             issues.push('❌ 无法验证 flake 配置');
           }
         }
-        
+
         if (issues.length === 0) {
           yield `✅ 未发现明显问题！
 
@@ -91,23 +89,22 @@ ${context}
 vibe-tools nix troubleshoot "具体问题描述"`;
         } else {
           yield `⚠️  发现以下问题:\n\n${issues.join('\n')}\n\n🔧 建议解决方案:\n`;
-          
+
           if (!envInfo.hasNix) {
             yield `1. 安装 Nix: curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install\n`;
           }
-          
+
           if (!envInfo.hasFlake) {
             yield `2. 生成 flake.nix: vibe-tools nix init\n`;
           }
         }
       }
-
     } catch (error) {
       yield `❌ 诊断失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Troubleshoot command error:', error);
       }
     }
   }
-} 
+}

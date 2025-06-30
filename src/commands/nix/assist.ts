@@ -21,7 +21,7 @@ export class AssistCommand implements Command {
       }
 
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       yield `🤖 Nix AI 助手启动中...\n`;
       yield `📋 环境状态: Nix ${envInfo.hasNix ? '✅' : '❌'} | Flake ${envInfo.hasFlake ? '✅' : '❌'} | 项目: ${envInfo.projectType || '未知'}\n`;
 
@@ -38,7 +38,7 @@ export class AssistCommand implements Command {
         try {
           const flakeContent = await NixUtils.readFlakeFile();
           context += `\n\n当前 flake.nix 内容:\n\`\`\`nix\n${flakeContent}\n\`\`\``;
-        } catch (e) {
+        } catch (_e) {
           context += '\n\n注意：无法读取 flake.nix 文件';
         }
       }
@@ -48,7 +48,7 @@ export class AssistCommand implements Command {
         const { execAsync } = await import('../../utils/execAsync.ts');
         const lsResult = await execAsync('ls -la');
         context += `\n\n当前目录文件:\n${lsResult.stdout}`;
-      } catch (e) {
+      } catch (_e) {
         // 忽略文件列表获取失败
       }
 
@@ -75,21 +75,15 @@ ${context}
 - 考虑项目的实际需求和环境`;
 
       const config = loadConfig();
-      
+
       // 使用专门的 nix 配置或默认配置
       const provider = createProvider(
-        options.provider || 
-        config.nix?.provider || 
-        'apizh' // 默认使用 apizh
+        options.provider || config.nix?.provider || 'apizh' // 默认使用 apizh
       );
-      
-      const model = options.model || 
-        config.nix?.model || 
-        'gpt-4.1-2025-04-14'; // 使用指定的模型
-      
-      const maxTokens = options.maxTokens || 
-        config.nix?.maxTokens || 
-        6000;
+
+      const model = options.model || config.nix?.model || 'gpt-4.1-2025-04-14'; // 使用指定的模型
+
+      const maxTokens = options.maxTokens || config.nix?.maxTokens || 6000;
 
       yield `🧠 使用模型: ${model}\n`;
 
@@ -100,18 +94,17 @@ ${context}
       });
 
       yield `💡 AI 助手回复:\n\n${response}\n\n`;
-      
+
       yield `✨ 需要更多帮助？
 - 使用 vibe-tools nix assist "其他问题" 继续咨询
 - 使用 vibe-tools nix troubleshoot 进行问题诊断  
 - 使用 vibe-tools nix analyze 分析当前配置`;
-
     } catch (error) {
       yield `❌ AI 助手失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Assist command error:', error);
       }
     }
   }
-} 
+}

@@ -71,9 +71,9 @@ export class AskCommand implements Command {
           'apizh-reasoning': 'o1-mini',
           'apizh-cost': 'gpt-4o-mini',
         };
-        
+
         model = apizhModels[providerName] || 'gpt-4o-mini';
-        
+
         // Show which specialized configuration is being used
         const taskNames: Record<string, string> = {
           'apizh-coding': '编程和代码生成',
@@ -85,8 +85,10 @@ export class AskCommand implements Command {
           'apizh-reasoning': '逻辑推理',
           'apizh-cost': '成本效益优化',
         };
-        
-        console.log(`🎯 Using ${providerName} (${taskNames[providerName] || '专用配置'}) with model: ${model}`);
+
+        console.log(
+          `🎯 Using ${providerName} (${taskNames[providerName] || '专用配置'}) with model: ${model}`
+        );
       } else {
         // Default models for other providers
         const otherProviderModels: Record<string, string> = {

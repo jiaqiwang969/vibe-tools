@@ -578,124 +578,147 @@ async function main() {
   let shouldContinueExecution = true;
 
   // Check if update check is explicitly enabled (默认禁用自动更新)
-  if (process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === '1' || process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === 'true') {
+  if (
+    process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === '1' ||
+    process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === 'true'
+  ) {
     consola.debug('Update check enabled via VIBE_TOOLS_ENABLE_UPDATE_CHECK environment variable');
     try {
       const versionInfo = await checkPackageVersion();
-    if (versionInfo.isOutdated && versionInfo.latest) {
-      // Inform the user about the automatic update
-      consola.info(
-        `New version v${versionInfo.latest} available (you have v${versionInfo.current}). Automatically updating...`
-      );
+      if (versionInfo.isOutdated && versionInfo.latest) {
+        // Inform the user about the automatic update
+        consola.info(
+          `New version v${versionInfo.latest} available (you have v${versionInfo.current}). Automatically updating...`
+        );
 
-      // Detect package manager based on environment or ask user
-      const runNonInteractive = shouldRunNonInteractive();
-      let selectedPackageManager: string;
+        // Detect package manager based on environment or ask user
+        const runNonInteractive = shouldRunNonInteractive();
+        let selectedPackageManager: string;
 
-      if (runNonInteractive) {
-        selectedPackageManager = detectPackageManager();
-        consola.info(`Auto-detected package manager: ${selectedPackageManager}`);
-      } else {
-        selectedPackageManager = await consola.prompt('Select package manager for update:', {
-          type: 'select',
-          options: ['npm', 'bun', 'yarn', 'pnpm'],
-          initial: detectPackageManager(), // Use detection as default suggestion
+        if (runNonInteractive) {
+          selectedPackageManager = detectPackageManager();
+          consola.info(`Auto-detected package manager: ${selectedPackageManager}`);
+        } else {
+          selectedPackageManager = await consola.prompt('Select package manager for update:', {
+            type: 'select',
+            options: ['npm', 'bun', 'yarn', 'pnpm'],
+            initial: detectPackageManager(), // Use detection as default suggestion
+          });
+        }
+
+        let pmCommand: string;
+        let pmArgs: string[];
+
+        switch (selectedPackageManager) {
+          case 'yarn':
+            pmCommand = 'yarn';
+            pmArgs = ['global', 'add', 'vibe-tools@latest'];
+            break;
+          case 'pnpm':
+            pmCommand = 'pnpm';
+            pmArgs = ['add', '-g', 'vibe-tools@latest'];
+            break;
+          case 'bun':
+            pmCommand = 'bun';
+            pmArgs = ['i', '-g', 'vibe-tools@latest'];
+            break;
+          case 'npm':
+          default:
+            pmCommand = 'npm';
+            pmArgs = ['i', '-g', 'vibe-tools@latest'];
+            break;
+        }
+
+        consola.info(
+          `Updating vibe-tools to v${versionInfo.latest} using ${selectedPackageManager}...`
+        );
+        shouldContinueExecution = false; // Don't execute original command yet
+
+        const updateProcess = spawn(pmCommand, pmArgs, {
+          stdio: 'inherit',
+          shell: true,
+          env: {
+            ...process.env,
+          },
         });
-      }
 
-      let pmCommand: string;
-      let pmArgs: string[];
+        updateProcess.on('close', async (code) => {
+          if (code === 0) {
+            consola.success(`Successfully updated vibe-tools to v${versionInfo.latest}.`);
 
-      switch (selectedPackageManager) {
-        case 'yarn':
-          pmCommand = 'yarn';
-          pmArgs = ['global', 'add', 'vibe-tools@latest'];
-          break;
-        case 'pnpm':
-          pmCommand = 'pnpm';
-          pmArgs = ['add', '-g', 'vibe-tools@latest'];
-          break;
-        case 'bun':
-          pmCommand = 'bun';
-          pmArgs = ['i', '-g', 'vibe-tools@latest'];
-          break;
-        case 'npm':
-        default:
-          pmCommand = 'npm';
-          pmArgs = ['i', '-g', 'vibe-tools@latest'];
-          break;
-      }
+            // --- MOVED Rules Check / Auto Update START ---
+            // We run this *after* the update succeeds
+            const filesRequiringUpdate = await performRulesCheck();
 
-      consola.info(
-        `Updating vibe-tools to v${versionInfo.latest} using ${selectedPackageManager}...`
-      );
-      shouldContinueExecution = false; // Don't execute original command yet
-
-      const updateProcess = spawn(pmCommand, pmArgs, {
-        stdio: 'inherit',
-        shell: true,
-        env: {
-          ...process.env,
-        },
-      });
-
-      updateProcess.on('close', async (code) => {
-        if (code === 0) {
-          consola.success(`Successfully updated vibe-tools to v${versionInfo.latest}.`);
-
-          // --- MOVED Rules Check / Auto Update START ---
-          // We run this *after* the update succeeds
-          const filesRequiringUpdate = await performRulesCheck();
-
-          if (filesRequiringUpdate.length > 0) {
-            consola.info(
-              `Detected ${filesRequiringUpdate.length} outdated IDE integration file(s). Attempting updates...`
-            );
-            for (const fileToUpdate of filesRequiringUpdate) {
-              try {
-                const updateResult = await updateProjectRulesFile(process.cwd(), fileToUpdate.ide);
-                if (updateResult.updated) {
-                  consola.success(
-                    `Successfully updated ${fileToUpdate.ide} integration file (${updateResult.path})`
+            if (filesRequiringUpdate.length > 0) {
+              consola.info(
+                `Detected ${filesRequiringUpdate.length} outdated IDE integration file(s). Attempting updates...`
+              );
+              for (const fileToUpdate of filesRequiringUpdate) {
+                try {
+                  const updateResult = await updateProjectRulesFile(
+                    process.cwd(),
+                    fileToUpdate.ide
                   );
-                } else if (updateResult.error) {
+                  if (updateResult.updated) {
+                    consola.success(
+                      `Successfully updated ${fileToUpdate.ide} integration file (${updateResult.path})`
+                    );
+                  } else if (updateResult.error) {
+                    consola.error(
+                      `Failed to update ${fileToUpdate.ide} integration file (${fileToUpdate.path}): ${updateResult.error.message}`
+                    );
+                  } else {
+                    // Not updated, but no error (e.g., already up-to-date, file created, etc.)
+                    consola.info(
+                      `Checked ${fileToUpdate.ide} integration file (${fileToUpdate.path}). No update applied (${updateResult.reason || 'unknown reason'}).`
+                    );
+                  }
+                } catch (error: any) {
                   consola.error(
-                    `Failed to update ${fileToUpdate.ide} integration file (${fileToUpdate.path}): ${updateResult.error.message}`
-                  );
-                } else {
-                  // Not updated, but no error (e.g., already up-to-date, file created, etc.)
-                  consola.info(
-                    `Checked ${fileToUpdate.ide} integration file (${fileToUpdate.path}). No update applied (${updateResult.reason || 'unknown reason'}).`
+                    `Error during update attempt for ${fileToUpdate.ide} (${fileToUpdate.path}): ${error.message}`
                   );
                 }
-              } catch (error: any) {
-                consola.error(
-                  `Error during update attempt for ${fileToUpdate.ide} (${fileToUpdate.path}): ${error.message}`
-                );
               }
             }
-          }
-          // --- MOVED Rules Check / Auto Update END ---
+            // --- MOVED Rules Check / Auto Update END ---
 
-          // Special handling for 'install' command
-          if (command === 'install') {
-            const isNonInteractive = shouldRunNonInteractive();
-            let proceedWithInstall: boolean;
+            // Special handling for 'install' command
+            if (command === 'install') {
+              const isNonInteractive = shouldRunNonInteractive();
+              let proceedWithInstall: boolean;
 
-            if (isNonInteractive) {
-              proceedWithInstall = true;
-              consola.info('Non-interactive mode: Automatically proceeding with install...');
+              if (isNonInteractive) {
+                proceedWithInstall = true;
+                consola.info('Non-interactive mode: Automatically proceeding with install...');
+              } else {
+                // Adjusted prompt message since we removed the automatic update attempt
+                const promptText = `vibe-tools update complete. Still proceed with install (config setup, etc.)?`;
+                proceedWithInstall = await consola.prompt(promptText, {
+                  type: 'confirm',
+                  initial: false, // Default to not re-running install actions
+                });
+              }
+
+              if (proceedWithInstall) {
+                consola.info('Proceeding with original install command...');
+                const rerunProcess = spawn('vibe-tools', originalArgs, {
+                  stdio: 'inherit',
+                  shell: true,
+                  env: process.env,
+                });
+                rerunProcess.on('close', (rerunCode) => process.exit(rerunCode ?? 1));
+                rerunProcess.on('error', (err) => {
+                  consola.error('Failed to re-run install command:', err);
+                  process.exit(1);
+                });
+              } else {
+                consola.info('Update done. Exiting.');
+                process.exit(0); // Exit cleanly, update was the goal
+              }
             } else {
-              // Adjusted prompt message since we removed the automatic update attempt
-              const promptText = `vibe-tools update complete. Still proceed with install (config setup, etc.)?`;
-              proceedWithInstall = await consola.prompt(promptText, {
-                type: 'confirm',
-                initial: false, // Default to not re-running install actions
-              });
-            }
-
-            if (proceedWithInstall) {
-              consola.info('Proceeding with original install command...');
+              // Re-run the original command for non-install commands
+              consola.info('Re-running original command...');
               const rerunProcess = spawn('vibe-tools', originalArgs, {
                 stdio: 'inherit',
                 shell: true,
@@ -703,47 +726,32 @@ async function main() {
               });
               rerunProcess.on('close', (rerunCode) => process.exit(rerunCode ?? 1));
               rerunProcess.on('error', (err) => {
-                consola.error('Failed to re-run install command:', err);
+                consola.error('Failed to re-run original command:', err);
                 process.exit(1);
               });
-            } else {
-              consola.info('Update done. Exiting.');
-              process.exit(0); // Exit cleanly, update was the goal
             }
           } else {
-            // Re-run the original command for non-install commands
-            consola.info('Re-running original command...');
-            const rerunProcess = spawn('vibe-tools', originalArgs, {
-              stdio: 'inherit',
-              shell: true,
-              env: process.env,
-            });
-            rerunProcess.on('close', (rerunCode) => process.exit(rerunCode ?? 1));
-            rerunProcess.on('error', (err) => {
-              consola.error('Failed to re-run original command:', err);
-              process.exit(1);
-            });
+            consola.error(`Failed to update vibe-tools (exit code: ${code}).`);
+            consola.warn('Continuing with the current version...');
+            shouldContinueExecution = true; // Allow original command to run
           }
-        } else {
-          consola.error(`Failed to update vibe-tools (exit code: ${code}).`);
+        });
+
+        updateProcess.on('error', (err) => {
+          consola.error('Failed to start update process:', err);
           consola.warn('Continuing with the current version...');
           shouldContinueExecution = true; // Allow original command to run
-        }
-      });
-
-      updateProcess.on('error', (err) => {
-        consola.error('Failed to start update process:', err);
-        consola.warn('Continuing with the current version...');
-        shouldContinueExecution = true; // Allow original command to run
-      });
-    }
+        });
+      }
     } catch (error) {
       consola.warn('Could not check for vibe-tools updates:', error);
       // Continue execution even if update check fails
     }
   } else {
     // Default behavior: Skip update check (用户可通过 VIBE_TOOLS_ENABLE_UPDATE_CHECK=1 启用更新检查)
-    consola.debug('Update check disabled by default. Set VIBE_TOOLS_ENABLE_UPDATE_CHECK=1 to enable automatic updates.');
+    consola.debug(
+      'Update check disabled by default. Set VIBE_TOOLS_ENABLE_UPDATE_CHECK=1 to enable automatic updates.'
+    );
   }
   // --- End Update Check Block ---
 

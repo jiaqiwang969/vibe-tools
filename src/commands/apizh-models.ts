@@ -4,7 +4,7 @@ import { APIZHProvider } from '../providers/base';
 export class ApizhModelsCommand implements Command {
   async *execute(query: string, options?: CommandOptions): CommandGenerator {
     const taskType = query.toLowerCase().trim();
-    
+
     if (!taskType || taskType === 'help' || taskType === 'list') {
       yield this.showHelp();
       return;
@@ -26,7 +26,7 @@ export class ApizhModelsCommand implements Command {
     const recommendations = APIZHProvider.getModelRecommendations(taskType, {
       language: this.detectLanguage(query),
       priority: this.detectPriority(query),
-      complexity: this.detectComplexity(query)
+      complexity: this.detectComplexity(query),
     });
 
     if (recommendations) {
@@ -82,19 +82,21 @@ vibe-tools apizh-models categories
 
     Object.entries(categories).forEach(([family, models]) => {
       const familyNames: Record<string, string> = {
-        'openai': '🔥 OpenAI系列',
-        'anthropic': '🎯 Anthropic Claude系列',
-        'deepseek': '🚀 DeepSeek系列 (中文优化)',
-        'gemini': '🌐 Google Gemini系列',
-        'qwen': '🇨🇳 通义千问系列 (中文原生)',
-        'doubao': '🔮 字节豆包系列 (中文原生)'
+        openai: '🔥 OpenAI系列',
+        anthropic: '🎯 Anthropic Claude系列',
+        deepseek: '🚀 DeepSeek系列 (中文优化)',
+        gemini: '🌐 Google Gemini系列',
+        qwen: '🇨🇳 通义千问系列 (中文原生)',
+        doubao: '🔮 字节豆包系列 (中文原生)',
       };
 
       output += `## ${familyNames[family] || family}\n`;
-      models.forEach(model => {
+      models.forEach((model) => {
         const info = APIZHProvider.getModelInfo(model);
         if (info) {
-          const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[info.cost];
+          const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[
+            info.cost
+          ];
           const speedIcon = { fast: '⚡', medium: '🚀', slow: '🐌' }[info.speed];
           output += `• **${model}** ${costIcon} ${speedIcon} - ${info.bestFor.join(', ')}\n`;
         } else {
@@ -115,21 +117,23 @@ vibe-tools apizh-models categories
 
   private showModelInfo(modelName: string): string {
     const info = APIZHProvider.getModelInfo(modelName);
-    
+
     if (!info) {
       return `❌ 未找到模型 "${modelName}" 的信息。
 
 可用的详细信息模型：
-${Object.keys(APIZHProvider.getModelsByCategory()).map(family => 
-  APIZHProvider.getModelsByCategory()[family].join(', ')
-).join('\n')}
+${Object.keys(APIZHProvider.getModelsByCategory())
+  .map((family) => APIZHProvider.getModelsByCategory()[family].join(', '))
+  .join('\n')}
 
 使用 \`vibe-tools apizh-models categories\` 查看所有模型。`;
     }
 
     const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[info.cost];
     const speedIcon = { fast: '⚡', medium: '🚀', slow: '🐌' }[info.speed];
-    const qualityIcon = { good: '⭐⭐⭐', excellent: '⭐⭐⭐⭐', premium: '⭐⭐⭐⭐⭐' }[info.quality];
+    const qualityIcon = { good: '⭐⭐⭐', excellent: '⭐⭐⭐⭐', premium: '⭐⭐⭐⭐⭐' }[
+      info.quality
+    ];
 
     return `
 # 📊 ${info.name} 详细信息
@@ -143,10 +147,10 @@ ${Object.keys(APIZHProvider.getModelsByCategory()).map(family =>
 • **中文友好**: ${info.chineseFriendly ? '✅' : '❌'}
 
 ## 核心能力
-${info.capabilities.map(cap => `• ${cap}`).join('\n')}
+${info.capabilities.map((cap) => `• ${cap}`).join('\n')}
 
 ## 最适合的任务
-${info.bestFor.map(task => `🎯 ${task}`).join('\n')}
+${info.bestFor.map((task) => `🎯 ${task}`).join('\n')}
 
 ## 使用建议
 \`\`\`bash
@@ -154,32 +158,38 @@ ${info.bestFor.map(task => `🎯 ${task}`).join('\n')}
 vibe-tools ask "你的问题" --provider=apizh --model=${info.name}
 
 # 如果支持网络搜索
-${info.capabilities.includes('web-search') ? 
-  `vibe-tools web "搜索问题" --provider=apizh --model=${info.name}` : 
-  '# 此模型不支持网络搜索'}
+${
+  info.capabilities.includes('web-search')
+    ? `vibe-tools web "搜索问题" --provider=apizh --model=${info.name}`
+    : '# 此模型不支持网络搜索'
+}
 \`\`\`
 `;
   }
 
   private formatRecommendations(taskType: string, recommendations: any): string {
     const primaryInfo = APIZHProvider.getModelInfo(recommendations.primary);
-    
+
     let output = `# 🎯 ${taskType} 任务推荐\n\n`;
-    
+
     output += `## 🏆 推荐模型: ${recommendations.primary}\n`;
     if (primaryInfo) {
-      const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[primaryInfo.cost];
+      const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[
+        primaryInfo.cost
+      ];
       const speedIcon = { fast: '⚡', medium: '🚀', slow: '🐌' }[primaryInfo.speed];
       output += `**${primaryInfo.family}系列** ${costIcon} ${speedIcon} - ${primaryInfo.bestFor.join(', ')}\n\n`;
     }
-    
+
     output += `**推荐理由**: ${recommendations.reason}\n\n`;
-    
+
     output += `## 🔄 备选模型\n`;
     recommendations.alternatives.forEach((alt: string) => {
       const altInfo = APIZHProvider.getModelInfo(alt);
       if (altInfo) {
-        const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[altInfo.cost];
+        const costIcon = { low: '💰', medium: '💰💰', high: '💰💰💰', premium: '💰💰💰💰' }[
+          altInfo.cost
+        ];
         const speedIcon = { fast: '⚡', medium: '🚀', slow: '🐌' }[altInfo.speed];
         output += `• **${alt}** ${costIcon} ${speedIcon} - ${altInfo.bestFor.join(', ')}\n`;
       } else {
@@ -191,12 +201,12 @@ ${info.capabilities.includes('web-search') ?
     output += `\`\`\`bash\n`;
     output += `# 使用推荐模型\n`;
     output += `vibe-tools ask "你的${taskType}问题" --provider=apizh --model=${recommendations.primary}\n`;
-    
+
     if (taskType === 'web-search') {
       output += `\n# 网络搜索\n`;
       output += `vibe-tools web "搜索内容" --provider=apizh\n`;
     }
-    
+
     output += `\`\`\`\n`;
 
     return output;

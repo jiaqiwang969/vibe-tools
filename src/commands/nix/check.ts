@@ -6,7 +6,7 @@ export class CheckCommand implements Command {
     try {
       // 检测环境
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       if (!envInfo.hasNix) {
         yield NixUtils.getHelpMessage(envInfo);
         return;
@@ -18,14 +18,14 @@ export class CheckCommand implements Command {
       }
 
       yield `🔍 检查 Nix flake...\n`;
-      
+
       // 执行 nix flake check
       const result = await NixUtils.executeNixCommand('flake', ['check']);
-      
+
       if (result.stdout) {
         yield `✅ 检查结果:\n${result.stdout}\n`;
       }
-      
+
       if (result.stderr) {
         yield `⚠️  检查信息:\n${result.stderr}\n`;
       }
@@ -35,7 +35,6 @@ export class CheckCommand implements Command {
 💡 提示: 
 - 如果有错误，请检查 flake.nix 配置
 - 使用 'vibe-tools nix troubleshoot' 获取诊断建议`;
-
     } catch (error) {
       yield `❌ 检查失败: ${error instanceof Error ? error.message : String(error)}
 
@@ -43,10 +42,10 @@ export class CheckCommand implements Command {
 - 检查 flake.nix 语法是否正确
 - 确保所有依赖都已正确声明
 - 使用 'vibe-tools nix troubleshoot' 获取详细诊断`;
-      
+
       if (options.debug) {
         console.error('Check command error:', error);
       }
     }
   }
-} 
+}

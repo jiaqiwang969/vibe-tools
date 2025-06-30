@@ -7,7 +7,7 @@ export class FixCommand implements Command {
   async *execute(query: string, options: CommandOptions): CommandGenerator {
     try {
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       if (!envInfo.hasNix) {
         yield NixUtils.getHelpMessage(envInfo);
         return;
@@ -24,11 +24,11 @@ export class FixCommand implements Command {
         try {
           flakeContent = await NixUtils.readFlakeFile();
           validationResult = await NixUtils.validateFlake();
-          
+
           if (!problemDescription && !validationResult.isValid) {
             problemDescription = validationResult.error || '检测到 flake 验证失败';
           }
-        } catch (e) {
+        } catch (_e) {
           problemDescription = problemDescription || '无法读取或验证 flake.nix 文件';
         }
       } else if (!problemDescription) {
@@ -40,7 +40,11 @@ export class FixCommand implements Command {
 
       // 获取错误详情（如果可能）
       let errorDetails = '';
-      if (envInfo.hasFlake && query.includes('error') || query.includes('失败') || query.includes('错误')) {
+      if (
+        (envInfo.hasFlake && query.includes('error')) ||
+        query.includes('失败') ||
+        query.includes('错误')
+      ) {
         try {
           // 尝试运行 nix flake check 获取详细错误
           const checkResult = await NixUtils.executeNixCommand('flake', ['check']);
@@ -59,15 +63,23 @@ export class FixCommand implements Command {
 - 项目类型: ${envInfo.projectType || '未知'}
 - 有 flake.nix: ${envInfo.hasFlake}
 
-${flakeContent ? `**当前 flake.nix 内容：**
+${
+  flakeContent
+    ? `**当前 flake.nix 内容：**
 \`\`\`nix
 ${flakeContent}
-\`\`\`` : ''}
+\`\`\``
+    : ''
+}
 
-${errorDetails ? `**错误详情：**
+${
+  errorDetails
+    ? `**错误详情：**
 \`\`\`
 ${errorDetails}
-\`\`\`` : ''}
+\`\`\``
+    : ''
+}
 
 请提供：
 
@@ -84,15 +96,9 @@ ${errorDetails}
 - 如果问题无法自动修复，说明需要手动干预的部分`;
 
       const config = loadConfig();
-      const provider = createProvider(
-        options.provider || 
-        config.nix?.provider || 
-        'apizh'
-      );
-      
-      const model = options.model || 
-        config.nix?.model || 
-        'gpt-4.1-2025-04-14';
+      const provider = createProvider(options.provider || config.nix?.provider || 'apizh');
+
+      const model = options.model || config.nix?.model || 'gpt-4.1-2025-04-14';
 
       const response = await provider.executePrompt(prompt, {
         model,
@@ -108,7 +114,6 @@ ${errorDetails}
 2. 运行 'vibe-tools nix check' 验证修复
 3. 运行 'vibe-tools nix develop' 测试开发环境
 4. 如果还有问题，使用 'vibe-tools nix assist "具体问题"' 获取更多帮助`;
-
     } catch (error) {
       yield `❌ 修复分析失败: ${error instanceof Error ? error.message : String(error)}
 
@@ -117,10 +122,10 @@ ${errorDetails}
 2. 确认所有依赖是否可访问
 3. 运行 'nix flake check --show-trace' 获取详细错误信息
 4. 使用 'vibe-tools nix troubleshoot' 进行基础诊断`;
-      
+
       if (options.debug) {
         console.error('Fix command error:', error);
       }
     }
   }
-} 
+}

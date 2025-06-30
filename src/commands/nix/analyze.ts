@@ -8,7 +8,7 @@ export class AnalyzeCommand implements Command {
     try {
       // 检测环境
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       if (!envInfo.hasNix) {
         yield NixUtils.getHelpMessage(envInfo);
         return;
@@ -23,10 +23,10 @@ export class AnalyzeCommand implements Command {
 
       // 读取 flake.nix 内容
       const flakeContent = await NixUtils.readFlakeFile();
-      
+
       // 检测项目类型
       const projectType = envInfo.projectType || 'Generic';
-      
+
       yield `📋 项目信息:
 - 类型: ${projectType}
 - Nix 版本: ${envInfo.nixVersion || '未知'}
@@ -55,7 +55,7 @@ ${flakeContent}
       // 获取配置和创建 AI provider
       const config = loadConfig();
       const provider = createProvider(options.provider || 'apizh-analysis');
-      
+
       // 调用 AI 分析
       const analysis = await provider.executePrompt(prompt, {
         model: options.model || config.repo?.model || 'claude-sonnet-4-20250514',
@@ -64,13 +64,12 @@ ${flakeContent}
       });
 
       yield `🧠 AI 分析结果:\n\n${analysis}`;
-
     } catch (error) {
       yield `❌ 分析失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Analyze command error:', error);
       }
     }
   }
-} 
+}

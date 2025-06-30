@@ -1,13 +1,12 @@
 import type { Command, CommandGenerator, CommandOptions } from '../../types';
 import { NixUtils } from './utils.ts';
 import { createProvider } from '../../providers/base.ts';
-import { loadConfig } from '../../config.ts';
 
 export class ExplainCommand implements Command {
   async *execute(query: string, options: CommandOptions): CommandGenerator {
     try {
       const envInfo = await NixUtils.detectEnvironment();
-      
+
       if (!envInfo.hasNix) {
         yield NixUtils.getHelpMessage(envInfo);
         return;
@@ -21,9 +20,9 @@ export class ExplainCommand implements Command {
       yield `📚 解释 flake.nix 配置...\n`;
 
       const flakeContent = await NixUtils.readFlakeFile();
-      
+
       let prompt: string;
-      
+
       if (query.trim()) {
         // 解释特定部分
         prompt = `作为 Nix Flakes 专家，请详细解释以下 flake.nix 配置中关于 "${query}" 的部分：
@@ -57,9 +56,8 @@ ${flakeContent}
 用中文回答，提供清晰易懂的解释。`;
       }
 
-      const config = loadConfig();
       const provider = createProvider(options.provider || 'apizh-analysis');
-      
+
       const explanation = await provider.executePrompt(prompt, {
         model: options.model || 'claude-sonnet-4-20250514',
         maxTokens: options.maxTokens || 4000,
@@ -67,13 +65,12 @@ ${flakeContent}
       });
 
       yield `📖 配置解释:\n\n${explanation}`;
-
     } catch (error) {
       yield `❌ 解释失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Explain command error:', error);
       }
     }
   }
-} 
+}

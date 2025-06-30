@@ -5,9 +5,9 @@ export class GitCommand implements Command {
   async *execute(query: string, options: CommandOptions): CommandGenerator {
     try {
       const envInfo = await NixUtils.detectEnvironment();
-      
-      const [action, ...rest] = query.trim().split(' ');
-      
+
+      const [action, ..._rest] = query.trim().split(' ');
+
       if (!action) {
         yield this.getHelpMessage();
         return;
@@ -26,10 +26,9 @@ export class GitCommand implements Command {
         default:
           yield `未知的 git 操作: ${action}\n\n${this.getHelpMessage()}`;
       }
-
     } catch (error) {
       yield `❌ Git 操作失败: ${error instanceof Error ? error.message : String(error)}`;
-      
+
       if (options.debug) {
         console.error('Git command error:', error);
       }
@@ -38,7 +37,7 @@ export class GitCommand implements Command {
 
   private async *checkStatus(envInfo: NixEnvironmentInfo): CommandGenerator {
     yield `🔍 检查 Git 状态...\n`;
-    
+
     yield `📋 Git 状态报告:
 - Git 仓库: ${envInfo.hasGit ? '✅ 是' : '❌ 否'}
 - flake.nix: ${envInfo.hasFlake ? '✅ 存在' : '❌ 不存在'}${envInfo.hasFlake ? (envInfo.flakeTracked ? ' (✅ 已跟踪)' : ' (❌ 未跟踪)') : ''}
@@ -67,7 +66,7 @@ export class GitCommand implements Command {
     yield `📁 添加 flake 文件到 git...\n`;
 
     const result = await NixUtils.addFlakeToGit();
-    
+
     if (result.success) {
       yield `✅ ${result.message}
 
@@ -136,4 +135,4 @@ export class GitCommand implements Command {
 Nix flakes 只会处理已被 git 跟踪的文件，
 请确保 flake.nix 和 flake.lock 已添加到 git。`;
   }
-} 
+}

@@ -52,23 +52,25 @@ export class InstallCommand implements Command {
 
       // Now ask for each required provider
       const askedForApizh = new Set<string>(); // 记录已经询问过的密钥
-      
+
       for (const provider of requiredProviders) {
         // 对于APIZH系列提供商，统一使用APIZH_API_KEY
-        const envKey = provider.toLowerCase().startsWith('apizh') 
-          ? 'APIZH_API_KEY' 
+        const envKey = provider.toLowerCase().startsWith('apizh')
+          ? 'APIZH_API_KEY'
           : `${provider.toUpperCase()}_API_KEY`;
-        
+
         // 如果已经询问过这个密钥，跳过
         if (askedForApizh.has(envKey)) {
           continue;
         }
         askedForApizh.add(envKey);
-        
+
         const currentValue = process.env[envKey];
 
         if (currentValue) {
-          consola.success(`Using existing ${colors.cyan(envKey.replace('_API_KEY', ''))} API key from environment.`);
+          consola.success(
+            `Using existing ${colors.cyan(envKey.replace('_API_KEY', ''))} API key from environment.`
+          );
           keys[envKey] = currentValue;
         } else {
           // Skip if SKIP_SETUP is set

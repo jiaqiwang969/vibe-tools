@@ -28,16 +28,16 @@ export class NixUtils {
       const nixCheck = await execAsync('which nix');
       if (nixCheck.stdout.trim()) {
         result.hasNix = true;
-        
+
         // 获取 nix 版本
         try {
           const versionResult = await execAsync('nix --version');
           result.nixVersion = versionResult.stdout.trim();
-        } catch (e) {
+        } catch (_e) {
           // 忽略版本获取失败
         }
       }
-    } catch (e) {
+    } catch (_e) {
       result.hasNix = false;
     }
 
@@ -46,16 +46,16 @@ export class NixUtils {
       const flakeFile = join(projectPath, 'flake.nix');
       await fs.access(flakeFile);
       result.hasFlake = true;
-      
+
       // 尝试检测项目类型
       result.projectType = await this.detectProjectType(projectPath);
-      
+
       // 检测 git 和文件跟踪状态
       const gitInfo = await this.detectGitStatus(projectPath);
       result.hasGit = gitInfo.hasGit;
       result.flakeTracked = gitInfo.flakeTracked;
       result.lockTracked = gitInfo.lockTracked;
-    } catch (e) {
+    } catch (_e) {
       result.hasFlake = false;
     }
 
@@ -82,7 +82,7 @@ export class NixUtils {
       try {
         await fs.access(join(projectPath, file));
         return type;
-      } catch (e) {
+      } catch (_e) {
         // 继续检查下一个
       }
     }
@@ -93,7 +93,10 @@ export class NixUtils {
   /**
    * 执行 nix 命令
    */
-  static async executeNixCommand(command: string, args: string[] = []): Promise<{ stdout: string; stderr: string }> {
+  static async executeNixCommand(
+    command: string,
+    args: string[] = []
+  ): Promise<{ stdout: string; stderr: string }> {
     const fullCommand = `nix ${command} ${args.join(' ')}`.trim();
     return await execAsync(fullCommand);
   }
@@ -117,14 +120,16 @@ export class NixUtils {
   /**
    * 检查 flake 是否有效
    */
-  static async validateFlake(projectPath: string = process.cwd()): Promise<{ isValid: boolean; error?: string }> {
+  static async validateFlake(
+    projectPath: string = process.cwd()
+  ): Promise<{ isValid: boolean; error?: string }> {
     try {
-      const result = await this.executeNixCommand('flake', ['check', '--no-build', projectPath]);
+      await this.executeNixCommand('flake', ['check', '--no-build', projectPath]);
       return { isValid: true };
     } catch (error) {
-      return { 
-        isValid: false, 
-        error: error instanceof Error ? error.message : String(error) 
+      return {
+        isValid: false,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -152,7 +157,7 @@ export class NixUtils {
       try {
         const flakeStatus = await execAsync('git ls-files flake.nix', { cwd: projectPath });
         result.flakeTracked = flakeStatus.stdout.trim() !== '';
-      } catch (e) {
+      } catch (_e) {
         // 文件不存在或未被跟踪
       }
 
@@ -160,10 +165,10 @@ export class NixUtils {
       try {
         const lockStatus = await execAsync('git ls-files flake.lock', { cwd: projectPath });
         result.lockTracked = lockStatus.stdout.trim() !== '';
-      } catch (e) {
+      } catch (_e) {
         // 文件不存在或未被跟踪
       }
-    } catch (e) {
+    } catch (_e) {
       // 不是 git 仓库
     }
 
@@ -173,30 +178,32 @@ export class NixUtils {
   /**
    * 添加 flake 文件到 git
    */
-  static async addFlakeToGit(projectPath: string = process.cwd()): Promise<{ success: boolean; message: string }> {
+  static async addFlakeToGit(
+    projectPath: string = process.cwd()
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // 检查是否是 git 仓库
       await execAsync('git rev-parse --git-dir', { cwd: projectPath });
-      
+
       // 添加 flake.nix
       try {
         await execAsync('git add flake.nix', { cwd: projectPath });
-      } catch (e) {
+      } catch (_e) {
         // flake.nix 可能不存在，忽略错误
       }
 
       // 添加 flake.lock (如果存在)
       try {
         await execAsync('git add flake.lock', { cwd: projectPath });
-      } catch (e) {
+      } catch (_e) {
         // flake.lock 可能不存在，忽略错误
       }
 
       return { success: true, message: 'flake 文件已添加到 git' };
     } catch (error) {
-      return { 
-        success: false, 
-        message: `添加到 git 失败: ${error instanceof Error ? error.message : String(error)}` 
+      return {
+        success: false,
+        message: `添加到 git 失败: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
   }
@@ -251,11 +258,11 @@ export class NixUtils {
     }
 
     const issues: string[] = [];
-    
+
     if (envInfo.hasFlake && !envInfo.flakeTracked) {
       issues.push('❌ flake.nix 未被 git 跟踪');
     }
-    
+
     if (envInfo.lockTracked === false) {
       // 只有当我们知道 lock 文件存在但未被跟踪时才提示
       try {
@@ -263,7 +270,7 @@ export class NixUtils {
         if (fs.existsSync('flake.lock')) {
           issues.push('❌ flake.lock 未被 git 跟踪');
         }
-      } catch (e) {
+      } catch (_e) {
         // 忽略文件检查错误
       }
     }
@@ -277,4 +284,4 @@ export class NixUtils {
 
     return '✅ git 状态正常';
   }
-} 
+}

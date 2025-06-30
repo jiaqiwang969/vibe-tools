@@ -30,18 +30,15 @@ Refactor the code to process multiple files concurrently, allowing for better re
 ### Implementation Plan
 
 1. **Collect All Files First**
-
    - Replace the `for await` loop with collecting all files into an array first
    - Use the existing `findFeatureBehaviorFilesArray` function in `utils.ts` instead of the async generator
 
 2. **Create a File Processing Queue**
-
    - Use the existing `PQueue` library to create a file-level queue
    - Add a new `fileConcurrency` option to control the maximum number of files processed concurrently
    - Leverage the existing queue management patterns from the scenario execution code
 
 3. **Process Files Concurrently**
-
    - Extract the file processing logic into a separate function
    - Submit each file to the file processing queue
    - Track file processing results and promises
@@ -373,19 +370,16 @@ private async *runTests(
 ## Performance Considerations
 
 1. **Balance Between File and Scenario Concurrency**:
-
    - The system now has two levels of concurrency: file-level and scenario-level
    - Total concurrent operations = `fileConcurrency × parallel`
    - Setting these too high could overwhelm system resources
 
 2. **Memory Usage**:
-
    - Processing multiple files concurrently will increase memory usage
    - Each file's scenarios and results will be held in memory
    - Default `fileConcurrency` of 3 is conservative to avoid memory issues
 
 3. **I/O Operations**:
-
    - Multiple concurrent file writes could occur when saving reports
    - File system performance may impact overall speed
 
@@ -398,12 +392,10 @@ private async *runTests(
 For a test suite with 10 files, each containing 5 scenarios, the expected improvements are:
 
 1. **Sequential Processing (Current)**:
-
    - Process time = Sum of all file processing times
    - If each file takes ~60 seconds, total time = ~600 seconds
 
 2. **Concurrent Processing (3 files)**:
-
    - Process time ≈ (Total files / concurrency) × avg file time
    - With 3 concurrent files: ~200 seconds (3× faster)
 

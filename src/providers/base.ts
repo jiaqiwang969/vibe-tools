@@ -2447,7 +2447,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'vision', 'multimodal', 'reasoning'],
       bestFor: ['complex analysis', 'multimodal tasks', 'professional writing', 'code review'],
       contextLength: '128k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'gpt-4o-mini': {
       name: 'gpt-4o-mini',
@@ -2458,7 +2458,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'vision', 'multimodal'],
       bestFor: ['general tasks', 'quick questions', 'cost-effective solutions', 'daily use'],
       contextLength: '128k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'gpt-4.1': {
       name: 'gpt-4.1',
@@ -2469,20 +2469,25 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'reasoning', 'large-context'],
       bestFor: ['long documents', 'complex reasoning', 'research analysis'],
       contextLength: '1M',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // OpenAI reasoning models
-    'o1': {
+    o1: {
       name: 'o1',
       family: 'openai',
       cost: 'premium',
       speed: 'slow',
       quality: 'premium',
       capabilities: ['advanced-reasoning', 'math', 'science', 'programming'],
-      bestFor: ['complex problem solving', 'mathematical proofs', 'scientific research', 'advanced coding'],
+      bestFor: [
+        'complex problem solving',
+        'mathematical proofs',
+        'scientific research',
+        'advanced coding',
+      ],
       contextLength: '200k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'o1-mini': {
       name: 'o1-mini',
@@ -2493,7 +2498,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['reasoning', 'math', 'programming'],
       bestFor: ['coding problems', 'math questions', 'logical reasoning'],
       contextLength: '128k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'o3-mini': {
       name: 'o3-mini',
@@ -2504,7 +2509,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['reasoning', 'math', 'programming', 'improved-efficiency'],
       bestFor: ['programming tasks', 'algorithm design', 'technical problem solving'],
       contextLength: '128k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // Anthropic Claude series - Best for writing and analysis
@@ -2517,7 +2522,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'analysis', 'writing', 'reasoning'],
       bestFor: ['creative writing', 'detailed analysis', 'research', 'professional content'],
       contextLength: '200k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'claude-sonnet-4-20250514': {
       name: 'claude-sonnet-4-20250514',
@@ -2528,7 +2533,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'analysis', 'writing'],
       bestFor: ['balanced tasks', 'content creation', 'data analysis', 'general AI assistance'],
       contextLength: '200k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // DeepSeek series - Excellent for Chinese and coding
@@ -2541,7 +2546,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'reasoning', 'chinese', 'programming'],
       bestFor: ['Chinese language tasks', 'programming', 'logical reasoning', 'local AI needs'],
       contextLength: '32k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'deepseek-v3': {
       name: 'deepseek-v3',
@@ -2552,7 +2557,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'chinese', 'programming', 'math'],
       bestFor: ['Chinese content', 'code generation', 'technical documentation', 'education'],
       contextLength: '64k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // Gemini series - Best for multimodal and web search
@@ -2565,7 +2570,7 @@ export class APIZHProvider extends OpenAIBase {
       capabilities: ['text', 'multimodal', 'web-search', 'real-time-info'],
       bestFor: ['web search', 'real-time information', 'multimodal analysis', 'research'],
       contextLength: '1M',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // Qwen series - Chinese-optimized models
@@ -2576,9 +2581,13 @@ export class APIZHProvider extends OpenAIBase {
       speed: 'medium',
       quality: 'excellent',
       capabilities: ['text', 'chinese', 'long-context'],
-      bestFor: ['long Chinese documents', 'Chinese literature analysis', 'extensive Chinese content'],
+      bestFor: [
+        'long Chinese documents',
+        'Chinese literature analysis',
+        'extensive Chinese content',
+      ],
       contextLength: '1M',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
     'qwen3-235b-a22b': {
       name: 'qwen3-235b-a22b',
@@ -2587,9 +2596,13 @@ export class APIZHProvider extends OpenAIBase {
       speed: 'medium',
       quality: 'premium',
       capabilities: ['text', 'chinese', 'reasoning', 'large-model'],
-      bestFor: ['complex Chinese tasks', 'advanced reasoning in Chinese', 'professional Chinese content'],
+      bestFor: [
+        'complex Chinese tasks',
+        'advanced reasoning in Chinese',
+        'professional Chinese content',
+      ],
       contextLength: '32k',
-      chineseFriendly: true
+      chineseFriendly: true,
     },
 
     // Doubao series - ByteDance's Chinese model
@@ -2600,10 +2613,14 @@ export class APIZHProvider extends OpenAIBase {
       speed: 'medium',
       quality: 'excellent',
       capabilities: ['text', 'chinese', 'thinking', 'reasoning'],
-      bestFor: ['Chinese reasoning tasks', 'thoughtful analysis in Chinese', 'Chinese educational content'],
+      bestFor: [
+        'Chinese reasoning tasks',
+        'thoughtful analysis in Chinese',
+        'Chinese educational content',
+      ],
       contextLength: '32k',
-      chineseFriendly: true
-    }
+      chineseFriendly: true,
+    },
   };
 
   constructor() {
@@ -2653,7 +2670,7 @@ export class APIZHProvider extends OpenAIBase {
         'qwen-long',
         'qwen2.5-72b-instruct',
         'qwen3-235b-a22b',
-        'qwen3-32b'
+        'qwen3-32b',
       ])
     );
   }
@@ -2661,60 +2678,79 @@ export class APIZHProvider extends OpenAIBase {
   /**
    * Get model recommendations based on task type and requirements
    */
-  static getModelRecommendations(taskType: string, requirements?: {
-    language?: 'chinese' | 'english' | 'multilingual';
-    priority?: 'cost' | 'speed' | 'quality';
-    complexity?: 'simple' | 'medium' | 'complex';
-  }): { recommended: string; alternatives: string[]; reason: string } {
-    const { language = 'multilingual', priority = 'quality', complexity = 'medium' } = requirements || {};
+  static getModelRecommendations(
+    taskType: string,
+    requirements?: {
+      language?: 'chinese' | 'english' | 'multilingual';
+      priority?: 'cost' | 'speed' | 'quality';
+      complexity?: 'simple' | 'medium' | 'complex';
+    }
+  ): { recommended: string; alternatives: string[]; reason: string } {
+    const {
+      language = 'multilingual',
+      priority = 'quality',
+      complexity = 'medium',
+    } = requirements || {};
 
     // Define task-specific model recommendations
     const taskRecommendations: Record<string, any> = {
       'web-search': {
         primary: 'gemini-2.5-pro-exp-03-25',
         alternatives: ['gpt-4o', 'claude-sonnet-4-20250514'],
-        reason: 'Gemini excels at web search and real-time information retrieval'
+        reason: 'Gemini excels at web search and real-time information retrieval',
       },
-      'coding': {
-        primary: complexity === 'complex' ? 'o1' : complexity === 'simple' ? 'o3-mini' : 'deepseek-r1',
+      coding: {
+        primary:
+          complexity === 'complex' ? 'o1' : complexity === 'simple' ? 'o3-mini' : 'deepseek-r1',
         alternatives: ['o1-mini', 'gpt-4o', 'deepseek-v3'],
-        reason: 'DeepSeek and O-series models are optimized for programming tasks'
+        reason: 'DeepSeek and O-series models are optimized for programming tasks',
       },
       'chinese-content': {
         primary: priority === 'cost' ? 'deepseek-r1' : 'qwen3-235b-a22b',
         alternatives: ['doubao-1-5-thinking-pro-250415', 'qwen-long', 'deepseek-v3'],
-        reason: 'Chinese-native models provide superior Chinese language understanding'
+        reason: 'Chinese-native models provide superior Chinese language understanding',
       },
-      'analysis': {
+      analysis: {
         primary: complexity === 'complex' ? 'claude-opus-4-20250514' : 'claude-sonnet-4-20250514',
         alternatives: ['gpt-4.1', 'o1', 'deepseek-r1'],
-        reason: 'Claude models excel at detailed analysis and reasoning'
+        reason: 'Claude models excel at detailed analysis and reasoning',
       },
       'creative-writing': {
         primary: 'claude-opus-4-20250514',
         alternatives: ['gpt-4o', 'claude-sonnet-4-20250514'],
-        reason: 'Claude Opus is renowned for creative and literary writing'
+        reason: 'Claude Opus is renowned for creative and literary writing',
       },
       'math-science': {
         primary: 'o1',
         alternatives: ['o1-mini', 'o3-mini', 'deepseek-r1'],
-        reason: 'O-series models are specifically designed for mathematical and scientific reasoning'
+        reason:
+          'O-series models are specifically designed for mathematical and scientific reasoning',
       },
-      'general': {
-        primary: priority === 'cost' ? 'gpt-4o-mini' : priority === 'speed' ? 'gpt-4o' : 'claude-sonnet-4-20250514',
+      general: {
+        primary:
+          priority === 'cost'
+            ? 'gpt-4o-mini'
+            : priority === 'speed'
+              ? 'gpt-4o'
+              : 'claude-sonnet-4-20250514',
         alternatives: ['gpt-4o', 'deepseek-r1', 'claude-sonnet-4-20250514'],
-        reason: 'Balanced models suitable for various general-purpose tasks'
+        reason: 'Balanced models suitable for various general-purpose tasks',
       },
       'long-context': {
         primary: 'gpt-4.1',
         alternatives: ['qwen-long', 'gemini-2.5-pro-exp-03-25'],
-        reason: 'These models support extensive context lengths for large documents'
-      }
+        reason: 'These models support extensive context lengths for large documents',
+      },
     };
 
     // Apply language preferences
     if (language === 'chinese') {
-      const chineseModels = ['deepseek-r1', 'qwen3-235b-a22b', 'doubao-1-5-thinking-pro-250415', 'qwen-long'];
+      const chineseModels = [
+        'deepseek-r1',
+        'qwen3-235b-a22b',
+        'doubao-1-5-thinking-pro-250415',
+        'qwen-long',
+      ];
       const recommendation = taskRecommendations[taskType];
       if (recommendation && !chineseModels.includes(recommendation.primary)) {
         recommendation.primary = chineseModels[0];
@@ -2738,7 +2774,7 @@ export class APIZHProvider extends OpenAIBase {
    */
   static getModelsByCategory(): Record<string, string[]> {
     const categories: Record<string, string[]> = {};
-    
+
     Object.entries(this.MODEL_CAPABILITIES).forEach(([modelName, info]) => {
       if (!categories[info.family]) {
         categories[info.family] = [];
@@ -2759,14 +2795,16 @@ export class APIZHProvider extends OpenAIBase {
       console.log('💰 Cost-effective: gpt-4o-mini, deepseek-r1');
       console.log('⭐ High-quality: gpt-4o, claude-sonnet-4-20250514');
       console.log('🧠 Reasoning: o1, o1-mini, o3-mini');
-      console.log('🇨🇳 Chinese-optimized: deepseek-r1, qwen3-235b-a22b, doubao-1-5-thinking-pro-250415');
+      console.log(
+        '🇨🇳 Chinese-optimized: deepseek-r1, qwen3-235b-a22b, doubao-1-5-thinking-pro-250415'
+      );
       console.log('🌐 Web search: gemini-2.5-pro-exp-03-25');
       console.log('📄 Long context: gpt-4.1, qwen-long');
       console.log('\n💡 For task-specific recommendations, use:');
       console.log('   vibe-tools apizh-models <task-type>');
       console.log('   vibe-tools apizh-models categories');
       console.log('\n✅ Using default: gpt-4o-mini\n');
-      
+
       // Return default model
       return 'gpt-4o-mini';
     }
@@ -2796,13 +2834,13 @@ export class APIZHProvider extends OpenAIBase {
   ): Promise<{ supported: boolean; model?: string; error?: string }> {
     // Check if the model supports web search based on known capabilities
     const webSearchSupportedModels = ['gemini-2.5-pro-exp-03-25'];
-    
+
     if (webSearchSupportedModels.includes(modelName)) {
       return {
         supported: true,
       };
     }
-    
+
     return {
       supported: false,
       model: 'gemini-2.5-pro-exp-03-25',
@@ -2812,7 +2850,23 @@ export class APIZHProvider extends OpenAIBase {
 }
 // Factory function to create providers
 export function createProvider(
-  provider: 'gemini' | 'openai' | 'openrouter' | 'perplexity' | 'modelbox' | 'anthropic' | 'xai' | 'apizh' | 'apizh-coding' | 'apizh-chinese' | 'apizh-analysis' | 'apizh-creative' | 'apizh-math' | 'apizh-web' | 'apizh-reasoning' | 'apizh-cost'
+  provider:
+    | 'gemini'
+    | 'openai'
+    | 'openrouter'
+    | 'perplexity'
+    | 'modelbox'
+    | 'anthropic'
+    | 'xai'
+    | 'apizh'
+    | 'apizh-coding'
+    | 'apizh-chinese'
+    | 'apizh-analysis'
+    | 'apizh-creative'
+    | 'apizh-math'
+    | 'apizh-web'
+    | 'apizh-reasoning'
+    | 'apizh-cost'
 ): BaseModelProvider {
   switch (provider) {
     case 'gemini': {
