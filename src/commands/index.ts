@@ -8,12 +8,14 @@ import { PlanCommand } from './plan.ts';
 import { RepoCommand } from './repo.ts';
 import { DocCommand } from './doc.ts';
 import { AskCommand } from './ask.ts';
+import { ApizhModelsCommand } from './apizh-models.ts';
 import { MCPCommand } from './mcp/mcp.ts';
 import { XcodeCommand } from './xcode/xcode.ts';
 import { ClickUpCommand } from './clickup.ts';
 import TestCommand from './test/index.ts';
 import YouTubeCommand from './youtube/index.ts';
 import { WaitCommand } from './wait.ts';
+import { NixCommand } from './nix/nixCommand.ts';
 
 export const commands: CommandMap = {
   web: new WebCommand(),
@@ -24,10 +26,12 @@ export const commands: CommandMap = {
   browser: new BrowserCommand(),
   plan: new PlanCommand(),
   ask: new AskCommand(),
+  'apizh-models': new ApizhModelsCommand(),
   mcp: new MCPCommand(),
   xcode: new XcodeCommand(),
   clickup: new ClickUpCommand(),
   test: new TestCommand(),
   youtube: new YouTubeCommand(),
   wait: new WaitCommand(),
+  nix: new NixCommand(),
 };

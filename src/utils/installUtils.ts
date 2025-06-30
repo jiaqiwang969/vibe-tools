@@ -39,6 +39,15 @@ export const VALID_PROVIDERS = [
   'Modelbox',
   'Gemini',
   'xAI',
+  'Apizh',
+  'Apizh-coding',
+  'Apizh-chinese',
+  'Apizh-analysis',
+  'Apizh-creative',
+  'Apizh-math',
+  'Apizh-web',
+  'Apizh-reasoning',
+  'Apizh-cost',
 ];
 export const VALID_PROVIDERS_LOWERCASE = VALID_PROVIDERS.map((p) => p.toLowerCase());
 
@@ -174,6 +183,7 @@ export function collectRequiredProviders(config: {
   websearch?: { provider: Provider; model: string };
   tooling?: { provider: Provider; model: string };
   largecontext?: { provider: Provider; model: string };
+  nix?: { provider: Provider; model: string };
 }): Provider[] {
   const providers = new Set<Provider>();
 
@@ -409,6 +419,7 @@ export function getDefaultConfigForNonInteractive(): {
   websearch: { provider: Provider; model: string };
   tooling: { provider: Provider; model: string };
   largecontext: { provider: Provider; model: string };
+  nix: { provider: Provider; model: string };
 } {
   // Auto-detect IDE
   const ide = isRunningInCursor() ? 'cursor' : 'cursor'; // Default to cursor
@@ -430,6 +441,10 @@ export function getDefaultConfigForNonInteractive(): {
     largecontext: {
       provider: 'gemini' as Provider,
       model: 'gemini-2.5-pro',
+    },
+    nix: {
+      provider: 'apizh' as Provider,
+      model: 'gpt-4.1-2025-04-14',
     },
   };
 }

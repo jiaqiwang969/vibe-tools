@@ -32,6 +32,7 @@ import {
   getDefaultConfigForNonInteractive,
 } from '../utils/installUtils';
 import { setTelemetryStatus, TELEMETRY_DATA_DESCRIPTION, isTelemetryEnabled } from '../telemetry';
+import { APIZH_AGENT_ROLES } from '../utils/providerAvailability';
 
 interface InstallOptions extends CommandOptions {
   packageManager?: 'npm' | 'yarn' | 'pnpm';
@@ -50,24 +51,37 @@ export class InstallCommand implements Command {
       const keys: Record<string, string> = {};
 
       // Now ask for each required provider
+      const askedForApizh = new Set<string>(); // 记录已经询问过的密钥
+      
       for (const provider of requiredProviders) {
-        const envKey = `${provider.toUpperCase()}_API_KEY`;
+        // 对于APIZH系列提供商，统一使用APIZH_API_KEY
+        const envKey = provider.toLowerCase().startsWith('apizh') 
+          ? 'APIZH_API_KEY' 
+          : `${provider.toUpperCase()}_API_KEY`;
+        
+        // 如果已经询问过这个密钥，跳过
+        if (askedForApizh.has(envKey)) {
+          continue;
+        }
+        askedForApizh.add(envKey);
+        
         const currentValue = process.env[envKey];
 
         if (currentValue) {
-          consola.success(`Using existing ${colors.cyan(provider)} API key from environment.`);
+          consola.success(`Using existing ${colors.cyan(envKey.replace('_API_KEY', ''))} API key from environment.`);
           keys[envKey] = currentValue;
         } else {
           // Skip if SKIP_SETUP is set
           if (process.env.SKIP_SETUP) {
             consola.warn(
-              `No ${colors.cyan(provider)} API key found in environment. You may need to set it manually.`
+              `No ${colors.cyan(envKey.replace('_API_KEY', ''))} API key found in environment. You may need to set it manually.`
             );
             continue;
           }
 
           // Ask for API key with interactive prompt
-          const key = await consola.prompt(`${colors.cyan(provider)} API Key:`, {
+          const displayName = envKey.replace('_API_KEY', '');
+          const key = await consola.prompt(`${colors.cyan(displayName)} API Key:`, {
             type: 'text',
             placeholder: 'sk-...',
             validate: (value: string) => value.length > 0 || 'Press Enter to skip',
@@ -75,9 +89,9 @@ export class InstallCommand implements Command {
 
           if (key && typeof key === 'string') {
             keys[envKey] = key;
-            consola.success(`${colors.cyan(provider)} API key set`);
+            consola.success(`${colors.cyan(displayName)} API key set`);
           } else {
-            consola.warn(`Skipped ${colors.cyan(provider)} API key`);
+            consola.warn(`Skipped ${colors.cyan(displayName)} API key`);
           }
         }
       }
@@ -148,6 +162,7 @@ export class InstallCommand implements Command {
       websearch?: { provider: Provider; model: string };
       tooling?: { provider: Provider; model: string };
       largecontext?: { provider: Provider; model: string };
+      nix?: { provider: Provider; model: string };
     },
     nonInteractive = false,
     preferLocal = false
@@ -199,6 +214,14 @@ export class InstallCommand implements Command {
       if (!finalConfig.doc) finalConfig.doc = { provider: 'perplexity' };
       finalConfig.doc.provider = config.largecontext.provider;
       finalConfig.doc.model = config.largecontext.model;
+    }
+
+    if (config.nix) {
+      finalConfig.nix = {
+        provider: config.nix.provider,
+        model: config.nix.model,
+        maxTokens: 6000, // Default for nix command
+      };
     }
 
     // Ensure the VIBE_HOME_DIR exists
@@ -425,6 +448,13 @@ export class InstallCommand implements Command {
                     model: existingConfig.doc.model || 'gemini-2.5-pro',
                   }
                 : undefined,
+            nix:
+              existingConfig.nix && existingConfig.nix.provider
+                ? {
+                    provider: existingConfig.nix.provider as Provider,
+                    model: existingConfig.nix.model || 'gpt-4.1-2025-04-14',
+                  }
+                : undefined,
           };
 
           // Skip to API key setup and config creation
@@ -568,6 +598,7 @@ export class InstallCommand implements Command {
         websearch?: { provider: Provider; model: string };
         tooling?: { provider: Provider; model: string };
         largecontext?: { provider: Provider; model: string };
+        nix?: { provider: Provider; model: string };
       } = {
         ide: selectedIde,
       };
@@ -603,6 +634,13 @@ export class InstallCommand implements Command {
                 ? {
                     provider: existingLocalConfig.doc.provider as Provider,
                     model: existingLocalConfig.doc.model || '',
+                  }
+                : undefined,
+            nix:
+              existingLocalConfig.nix && existingLocalConfig.nix.provider
+                ? {
+                    provider: existingLocalConfig.nix.provider as Provider,
+                    model: existingLocalConfig.nix.model || '',
                   }
                 : undefined,
           };
@@ -641,6 +679,13 @@ export class InstallCommand implements Command {
                   model: existingGlobalConfig.doc.model || '',
                 }
               : undefined,
+          nix:
+            existingGlobalConfig.nix && existingGlobalConfig.nix.provider
+              ? {
+                  provider: existingGlobalConfig.nix.provider as Provider,
+                  model: existingGlobalConfig.nix.model || '',
+                }
+              : undefined,
         };
 
         consola.success('Using existing configuration values as defaults');
@@ -653,19 +698,19 @@ export class InstallCommand implements Command {
           type: 'select',
           options: [
             {
-              value: 'gemini:gemini-2.5-flash',
-              label: 'Gemini Flash 2.5',
+              value: `${APIZH_AGENT_ROLES.coding.provider}:${APIZH_AGENT_ROLES.coding.model}`,
+              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.coding.description}`,
               hint: 'recommended',
             },
             {
-              value: 'gemini:gemini-2.5-flash-lite-preview-06-17',
-              label: 'Gemini Flash Lite 2.5 Preview',
-              hint: 'lightweight',
+              value: 'gemini:gemini-2.5-flash',
+              label: 'Gemini Flash 2.5',
+              hint: 'fast',
             },
             {
               value: 'anthropic:claude-sonnet-4-20250514',
               label: 'Claude 4 Sonnet',
-              hint: 'recommended',
+              hint: 'balanced',
             },
             {
               value: 'anthropic:claude-opus-4-20250514',
@@ -678,16 +723,8 @@ export class InstallCommand implements Command {
               value: 'openrouter:anthropic/claude-sonnet-4',
               label: 'OpenRouter - Claude 4 Sonnet',
             },
-            {
-              value: 'openrouter:x-ai/grok-3-beta',
-              label: 'OpenRouter - Grok 3',
-            },
-            {
-              value: 'openrouter:x-ai/grok-3-mini-beta',
-              label: 'OpenRouter - Grok 3 Mini',
-            },
           ],
-          initial: 'gemini:gemini-2.5-flash',
+          initial: `${APIZH_AGENT_ROLES.coding.provider}:${APIZH_AGENT_ROLES.coding.model}`,
         });
 
         // Web search (web command)
@@ -696,19 +733,20 @@ export class InstallCommand implements Command {
           {
             type: 'select',
             options: [
-              { value: 'perplexity:sonar-pro', label: 'Perplexity Sonar Pro', hint: 'recommended' },
-              { value: 'perplexity:sonar', label: 'Perplexity Sonar', hint: 'recommended' },
-              { value: 'gemini:gemini-2.5-flash', label: 'Gemini Flash 2.5' },
               {
-                value: 'gemini:gemini-2.5-flash-lite-preview-06-17',
-                label: 'Gemini Flash Lite 2.5 Preview',
+                value: `${APIZH_AGENT_ROLES['web-search'].provider}:${APIZH_AGENT_ROLES['web-search'].model}`,
+                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['web-search'].description}`,
+                hint: 'recommended',
               },
+              { value: 'perplexity:sonar-pro', label: 'Perplexity Sonar Pro', hint: 'classic' },
+              { value: 'perplexity:sonar', label: 'Perplexity Sonar', hint: 'fast' },
+              { value: 'gemini:gemini-2.5-flash', label: 'Gemini Flash 2.5' },
               {
                 value: 'openrouter:perplexity/sonar-pro',
                 label: 'OpenRouter - Perplexity Sonar Pro',
               },
             ],
-            initial: 'perplexity:sonar-pro',
+            initial: `${APIZH_AGENT_ROLES['web-search'].provider}:${APIZH_AGENT_ROLES['web-search'].model}`,
           }
         );
 
@@ -717,30 +755,27 @@ export class InstallCommand implements Command {
           type: 'select',
           options: [
             {
+              value: `${APIZH_AGENT_ROLES.tooling.provider}:${APIZH_AGENT_ROLES.tooling.model}`,
+              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.tooling.description}`,
+              hint: 'recommended',
+            },
+            {
               value: 'anthropic:claude-sonnet-4-20250514',
               label: 'Claude 4 Sonnet',
-              hint: 'recommended',
+              hint: 'classic',
             },
             {
               value: 'gemini:gemini-2.5-pro',
               label: 'Gemini Pro 2.5',
-              hint: 'recommended',
+              hint: 'balanced',
             },
             { value: 'openai:gpt-4o', label: 'GPT-4o' },
             {
               value: 'openrouter:anthropic/claude-sonnet-4',
               label: 'OpenRouter - Claude 4 Sonnet',
             },
-            {
-              value: 'openrouter:x-ai/grok-3-beta',
-              label: 'OpenRouter - Grok 3',
-            },
-            {
-              value: 'openrouter:x-ai/grok-3-mini-beta',
-              label: 'OpenRouter - Grok 3 Mini',
-            },
           ],
-          initial: 'anthropic:claude-sonnet-4-20250514',
+          initial: `${APIZH_AGENT_ROLES.tooling.provider}:${APIZH_AGENT_ROLES.tooling.model}`,
         });
 
         // Large context (doc command)
@@ -750,9 +785,14 @@ export class InstallCommand implements Command {
             type: 'select',
             options: [
               {
+                value: `${APIZH_AGENT_ROLES['large-context'].provider}:${APIZH_AGENT_ROLES['large-context'].model}`,
+                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['large-context'].description}`,
+                hint: 'recommended',
+              },
+              {
                 value: 'gemini:gemini-2.5-pro',
                 label: 'Gemini Pro 2.5',
-                hint: 'recommended',
+                hint: 'classic',
               },
               {
                 value: 'anthropic:claude-sonnet-4-20250514',
@@ -760,14 +800,38 @@ export class InstallCommand implements Command {
               },
               { value: 'perplexity:sonar', label: 'Perplexity Sonar' },
               { value: 'openai:gpt-4o', label: 'GPT-4o' },
-              {
-                value: 'openrouter:x-ai/grok-3-beta',
-                label: 'OpenRouter - Grok 3',
-              },
             ],
-            initial: 'gemini:gemini-2.5-pro',
+            initial: `${APIZH_AGENT_ROLES['large-context'].provider}:${APIZH_AGENT_ROLES['large-context'].model}`,
           }
         );
+
+        // Nix (nix command)
+        const nix = await consola.prompt('Nix Agent - Flake Manager & Environment Builder:', {
+          type: 'select',
+          options: [
+            {
+              value: 'apizh:gpt-4.1-2025-04-14',
+              label: '🇨🇳 APIZH 🛠️ Nix专家 - Flake配置、环境管理专家',
+              hint: 'recommended',
+            },
+            {
+              value: 'anthropic:claude-sonnet-4-20250514',
+              label: 'Claude 4 Sonnet',
+              hint: 'balanced',
+            },
+            {
+              value: 'gemini:gemini-2.5-pro',
+              label: 'Gemini Pro 2.5',
+              hint: 'fast',
+            },
+            { value: 'openai:gpt-4o', label: 'GPT-4o' },
+            {
+              value: 'openrouter:anthropic/claude-sonnet-4',
+              label: 'OpenRouter - Claude 4 Sonnet',
+            },
+          ],
+          initial: 'apizh:gpt-4.1-2025-04-14',
+        });
 
         // Collect all selected options into a config object
         config = {
@@ -776,6 +840,7 @@ export class InstallCommand implements Command {
           websearch: parseProviderModel(websearch as string),
           tooling: parseProviderModel(tooling as string),
           largecontext: parseProviderModel(largecontext as string),
+          nix: parseProviderModel(nix as string),
         };
       }
 
@@ -847,6 +912,8 @@ export class InstallCommand implements Command {
           `  ${colors.green('vibe-tools repo')} ${colors.white('"Explain this codebase"')}`,
           `  ${colors.green('vibe-tools web')} ${colors.white('"Search for something online"')}`,
           `  ${colors.green('vibe-tools plan')} ${colors.white('"Create implementation plan"')}`,
+          `  ${colors.green('vibe-tools doc')} ${colors.white('"Think about a system"')}`,
+          `  ${colors.green('vibe-tools nix')} ${colors.white('"为项目创建flake.nix文件"')}`,
         ].join('\n'),
       });
 

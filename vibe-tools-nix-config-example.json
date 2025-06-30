@@ -1,0 +1,25 @@
+{
+  "ide": "cursor",
+  "reasoningEffort": "medium",
+  "nix": {
+    "provider": "apizh",
+    "model": "gpt-4.1-2025-04-14",
+    "maxTokens": 6000
+  },
+  "repo": {
+    "provider": "apizh-analysis",
+    "model": "claude-sonnet-4-20250514",
+    "maxTokens": 8000
+  },
+  "web": {
+    "provider": "apizh-web",
+    "model": "gemini-2.5-pro-exp-03-25",
+    "maxTokens": 4000
+  },
+  "plan": {
+    "fileProvider": "apizh-analysis",
+    "thinkingProvider": "apizh-reasoning",
+    "fileModel": "claude-sonnet-4-20250514",
+    "thinkingModel": "o3-mini"
+  }
+} 

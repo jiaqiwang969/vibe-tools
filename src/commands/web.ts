@@ -9,7 +9,7 @@ import {
   getDefaultModel,
 } from '../utils/providerAvailability';
 
-const DEFAULT_WEB_MODELS: Record<Provider, string> = {
+const DEFAULT_WEB_MODELS: Record<string, string> = {
   gemini: 'gemini-2.5-pro',
   openai: 'NO WEB SUPPORT',
   perplexity: 'sonar-pro',
@@ -17,6 +17,15 @@ const DEFAULT_WEB_MODELS: Record<Provider, string> = {
   modelbox: 'google/gemini-2.5-pro',
   xai: 'NO WEB SUPPORT',
   anthropic: 'NO WEB SUPPORT',
+  apizh: 'gemini-2.5-pro-exp-03-25',
+  'apizh-web': 'gemini-2.5-pro-exp-03-25',
+  'apizh-coding': 'NO WEB SUPPORT',
+  'apizh-chinese': 'NO WEB SUPPORT',
+  'apizh-analysis': 'NO WEB SUPPORT',
+  'apizh-creative': 'NO WEB SUPPORT',
+  'apizh-math': 'NO WEB SUPPORT',
+  'apizh-reasoning': 'NO WEB SUPPORT',
+  'apizh-cost': 'NO WEB SUPPORT',
 };
 
 export class WebCommand implements Command {

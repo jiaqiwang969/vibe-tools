@@ -1,0 +1,189 @@
+# vibe-tools - AI 编程助手的超能力工具箱
+
+## 项目概述
+
+vibe-tools 是一个为 AI 编程助手（如 Cursor Composer）设计的命令行工具集，它赋予 AI 助手调用多个专业 AI 模型和执行高级任务的能力。通过 vibe-tools，您的 AI 编程助手可以组建一个"AI 团队"，每个成员都有自己的专长。
+
+### 核心理念
+
+- **AI 团队协作**：不同的 AI 模型各有所长，vibe-tools 让它们能够协同工作
+- **增强 AI 能力**：为现有的 AI 编程助手添加新技能
+- **开源免费**：完全开源，MIT 许可证，代码透明可审计
+
+## 主要特性
+
+### 🤖 AI 团队成员
+
+1. **Perplexity** - 网络搜索专家
+   - 实时搜索最新技术信息
+   - 不会产生幻觉的准确答案
+   - 深度研究和信息收集
+
+2. **Gemini 2.0** - 代码库分析大师
+   - 2M token 超大上下文窗口
+   - 一次性分析整个代码库
+   - 代码审查和架构规划
+
+3. **Stagehand** - 浏览器自动化专家
+   - 自然语言控制浏览器
+   - 网页测试和调试
+   - 表单填写和数据抓取
+
+4. **OpenRouter** - 多模型网关
+   - 访问各种 AI 模型
+   - 统一的 API 接口
+   - MCP (Model Context Protocol) 支持
+
+### 🛠️ 核心功能
+
+- **Web 搜索** (`web`)：获取最新的技术信息和解决方案
+- **代码库分析** (`repo`)：理解项目结构，生成实施计划
+- **文档生成** (`doc`)：为任何代码库生成详细文档
+- **浏览器自动化** (`browser`)：测试 Web 应用，自动化浏览器任务
+- **GitHub 集成** (`github`)：获取 PR 和 Issue 信息
+- **YouTube 分析** (`youtube`)：从技术视频中提取知识
+- **实施规划** (`plan`)：生成详细的功能实现计划
+- **MCP 工具** (`mcp`)：调用专业工具服务器
+
+## 技术架构
+
+### 技术栈
+
+- **核心语言**：TypeScript (ES2022)
+- **运行环境**：Node.js 18+
+- **构建工具**：esbuild
+- **主要依赖**：
+  - AI SDK：OpenAI、Anthropic、Google AI
+  - 浏览器自动化：Playwright
+  - 代码分析：Repomix
+
+### 架构设计
+
+```
+vibe-tools/
+├── src/
+│   ├── commands/        # 命令实现（插件式架构）
+│   ├── providers/       # AI 提供商抽象层
+│   ├── utils/          # 工具函数
+│   └── telemetry/      # 使用数据收集
+├── dist/               # 编译输出
+└── tests/              # 测试用例
+```
+
+### 设计模式
+
+1. **命令模式**：每个功能都是独立的命令
+2. **策略模式**：可切换的 AI 提供商
+3. **生成器模式**：流式输出支持
+4. **降级策略**：自动切换备用提供商
+
+## 安装使用
+
+### 安装
+
+```bash
+# 全局安装
+npm install -g vibe-tools
+
+# 初始化配置
+vibe-tools install .
+```
+
+### 基本用法
+
+```bash
+# 网络搜索
+vibe-tools web "TypeScript 5.7 新特性"
+
+# 分析代码库
+vibe-tools repo "解释这个项目的认证流程"
+
+# 生成文档
+vibe-tools doc --output docs.md
+
+# 浏览器测试
+vibe-tools browser open "https://example.com" --screenshot
+```
+
+### 在 Cursor 中使用
+
+安装后，在 Cursor Composer 中可以直接说：
+
+- "让 Perplexity 搜索最新的 React 19 特性"
+- "让 Gemini 分析代码库并提出重构建议"
+- "用 Stagehand 测试登录表单"
+
+## 配置要求
+
+### API 密钥
+
+需要配置以下 API 密钥（至少需要前两个）：
+
+- `PERPLEXITY_API_KEY` - Perplexity AI
+- `GEMINI_API_KEY` - Google Gemini
+- `OPENAI_API_KEY` - OpenAI（可选，用于 Stagehand）
+- `ANTHROPIC_API_KEY` - Anthropic（可选，用于 MCP）
+
+### 系统要求
+
+- Node.js 18 或更高版本
+- 支持的 IDE：Cursor、Claude Code、Windsurf、Cline 等
+
+## 开源信息
+
+- **许可证**：MIT License
+- **GitHub**：https://github.com/eastlondoner/vibe-tools
+- **作者**：Andrew Jefferson (eastlondoner)
+- **贡献**：欢迎提交 PR 和 Issue
+
+## 隐私保护
+
+- **匿名遥测**：仅收集命令使用统计，不收集代码内容
+- **可选退出**：安装时可选择是否启用遥测
+- **本地运行**：所有处理都在本地完成
+
+## 使用场景
+
+### 1. 技术调研
+```bash
+vibe-tools web "比较 Next.js 14 和 Remix 的性能差异"
+```
+
+### 2. 代码审查
+```bash
+vibe-tools repo "审查最近的代码更改，找出潜在问题" --with-diff
+```
+
+### 3. 依赖文档
+```bash
+vibe-tools doc --from-github "facebook/react" --output local-docs/react.md
+```
+
+### 4. 自动化测试
+```bash
+vibe-tools browser act "填写注册表单并提交" --url "https://myapp.com/register"
+```
+
+## 扩展性
+
+vibe-tools 采用插件式架构，易于扩展：
+
+1. **添加新命令**：实现 Command 接口即可
+2. **集成新 AI**：扩展 Provider 基类
+3. **自定义配置**：通过 vibe-tools.config.json
+
+## 总结
+
+vibe-tools 是一个强大的开源工具，它将多个专业 AI 服务整合到一个统一的命令行界面中，让 AI 编程助手能够：
+
+- 🔍 搜索最新信息（Perplexity）
+- 📊 分析整个代码库（Gemini）
+- 🌐 自动化浏览器操作（Stagehand）
+- 📝 生成专业文档
+- 🔧 执行各种开发任务
+
+通过 vibe-tools，您的 AI 编程助手不再是单打独斗，而是拥有了一个专业的 AI 团队，大大提升了解决复杂编程问题的能力。
+
+---
+
+*"Give AI Agents an AI team and advanced skills" - vibe-tools* 

@@ -2420,9 +2420,399 @@ export class XAIProvider extends OpenAIBase {
     };
   }
 }
+
+// Model capability definitions for APIZH provider
+interface ModelCapability {
+  name: string;
+  family: 'openai' | 'anthropic' | 'deepseek' | 'gemini' | 'qwen' | 'doubao';
+  cost: 'low' | 'medium' | 'high' | 'premium';
+  speed: 'fast' | 'medium' | 'slow';
+  quality: 'good' | 'excellent' | 'premium';
+  capabilities: string[];
+  bestFor: string[];
+  contextLength?: string;
+  chineseFriendly: boolean;
+}
+
+// APIZH (Chinese API Relay) provider implementation
+export class APIZHProvider extends OpenAIBase {
+  private static readonly MODEL_CAPABILITIES: Record<string, ModelCapability> = {
+    // OpenAI GPT-4o series - Latest and most capable
+    'gpt-4o': {
+      name: 'gpt-4o',
+      family: 'openai',
+      cost: 'high',
+      speed: 'fast',
+      quality: 'premium',
+      capabilities: ['text', 'vision', 'multimodal', 'reasoning'],
+      bestFor: ['complex analysis', 'multimodal tasks', 'professional writing', 'code review'],
+      contextLength: '128k',
+      chineseFriendly: true
+    },
+    'gpt-4o-mini': {
+      name: 'gpt-4o-mini',
+      family: 'openai',
+      cost: 'low',
+      speed: 'fast',
+      quality: 'excellent',
+      capabilities: ['text', 'vision', 'multimodal'],
+      bestFor: ['general tasks', 'quick questions', 'cost-effective solutions', 'daily use'],
+      contextLength: '128k',
+      chineseFriendly: true
+    },
+    'gpt-4.1': {
+      name: 'gpt-4.1',
+      family: 'openai',
+      cost: 'high',
+      speed: 'medium',
+      quality: 'premium',
+      capabilities: ['text', 'reasoning', 'large-context'],
+      bestFor: ['long documents', 'complex reasoning', 'research analysis'],
+      contextLength: '1M',
+      chineseFriendly: true
+    },
+
+    // OpenAI reasoning models
+    'o1': {
+      name: 'o1',
+      family: 'openai',
+      cost: 'premium',
+      speed: 'slow',
+      quality: 'premium',
+      capabilities: ['advanced-reasoning', 'math', 'science', 'programming'],
+      bestFor: ['complex problem solving', 'mathematical proofs', 'scientific research', 'advanced coding'],
+      contextLength: '200k',
+      chineseFriendly: true
+    },
+    'o1-mini': {
+      name: 'o1-mini',
+      family: 'openai',
+      cost: 'medium',
+      speed: 'medium',
+      quality: 'excellent',
+      capabilities: ['reasoning', 'math', 'programming'],
+      bestFor: ['coding problems', 'math questions', 'logical reasoning'],
+      contextLength: '128k',
+      chineseFriendly: true
+    },
+    'o3-mini': {
+      name: 'o3-mini',
+      family: 'openai',
+      cost: 'medium',
+      speed: 'medium',
+      quality: 'excellent',
+      capabilities: ['reasoning', 'math', 'programming', 'improved-efficiency'],
+      bestFor: ['programming tasks', 'algorithm design', 'technical problem solving'],
+      contextLength: '128k',
+      chineseFriendly: true
+    },
+
+    // Anthropic Claude series - Best for writing and analysis
+    'claude-opus-4-20250514': {
+      name: 'claude-opus-4-20250514',
+      family: 'anthropic',
+      cost: 'premium',
+      speed: 'medium',
+      quality: 'premium',
+      capabilities: ['text', 'analysis', 'writing', 'reasoning'],
+      bestFor: ['creative writing', 'detailed analysis', 'research', 'professional content'],
+      contextLength: '200k',
+      chineseFriendly: true
+    },
+    'claude-sonnet-4-20250514': {
+      name: 'claude-sonnet-4-20250514',
+      family: 'anthropic',
+      cost: 'high',
+      speed: 'fast',
+      quality: 'excellent',
+      capabilities: ['text', 'analysis', 'writing'],
+      bestFor: ['balanced tasks', 'content creation', 'data analysis', 'general AI assistance'],
+      contextLength: '200k',
+      chineseFriendly: true
+    },
+
+    // DeepSeek series - Excellent for Chinese and coding
+    'deepseek-r1': {
+      name: 'deepseek-r1',
+      family: 'deepseek',
+      cost: 'medium',
+      speed: 'fast',
+      quality: 'excellent',
+      capabilities: ['text', 'reasoning', 'chinese', 'programming'],
+      bestFor: ['Chinese language tasks', 'programming', 'logical reasoning', 'local AI needs'],
+      contextLength: '32k',
+      chineseFriendly: true
+    },
+    'deepseek-v3': {
+      name: 'deepseek-v3',
+      family: 'deepseek',
+      cost: 'medium',
+      speed: 'fast',
+      quality: 'excellent',
+      capabilities: ['text', 'chinese', 'programming', 'math'],
+      bestFor: ['Chinese content', 'code generation', 'technical documentation', 'education'],
+      contextLength: '64k',
+      chineseFriendly: true
+    },
+
+    // Gemini series - Best for multimodal and web search
+    'gemini-2.5-pro-exp-03-25': {
+      name: 'gemini-2.5-pro-exp-03-25',
+      family: 'gemini',
+      cost: 'high',
+      speed: 'fast',
+      quality: 'excellent',
+      capabilities: ['text', 'multimodal', 'web-search', 'real-time-info'],
+      bestFor: ['web search', 'real-time information', 'multimodal analysis', 'research'],
+      contextLength: '1M',
+      chineseFriendly: true
+    },
+
+    // Qwen series - Chinese-optimized models
+    'qwen-long': {
+      name: 'qwen-long',
+      family: 'qwen',
+      cost: 'medium',
+      speed: 'medium',
+      quality: 'excellent',
+      capabilities: ['text', 'chinese', 'long-context'],
+      bestFor: ['long Chinese documents', 'Chinese literature analysis', 'extensive Chinese content'],
+      contextLength: '1M',
+      chineseFriendly: true
+    },
+    'qwen3-235b-a22b': {
+      name: 'qwen3-235b-a22b',
+      family: 'qwen',
+      cost: 'high',
+      speed: 'medium',
+      quality: 'premium',
+      capabilities: ['text', 'chinese', 'reasoning', 'large-model'],
+      bestFor: ['complex Chinese tasks', 'advanced reasoning in Chinese', 'professional Chinese content'],
+      contextLength: '32k',
+      chineseFriendly: true
+    },
+
+    // Doubao series - ByteDance's Chinese model
+    'doubao-1-5-thinking-pro-250415': {
+      name: 'doubao-1-5-thinking-pro-250415',
+      family: 'doubao',
+      cost: 'medium',
+      speed: 'medium',
+      quality: 'excellent',
+      capabilities: ['text', 'chinese', 'thinking', 'reasoning'],
+      bestFor: ['Chinese reasoning tasks', 'thoughtful analysis in Chinese', 'Chinese educational content'],
+      contextLength: '32k',
+      chineseFriendly: true
+    }
+  };
+
+  constructor() {
+    const apiKey = process.env.APIZH_API_KEY;
+    if (!apiKey) {
+      throw new ApiKeyMissingError('APIZH');
+    }
+    super(apiKey, 'https://ai.pumpkinai.online/v1');
+
+    // Initialize available models based on the test results
+    this.availableModels = Promise.resolve(
+      new Set([
+        'claude-3-7-sonnet-20250219',
+        'claude-opus-4-20250514',
+        'claude-opus-4-20250514-thinking',
+        'claude-sonnet-4-20250514',
+        'claude-sonnet-4-20250514-thinking',
+        'deepseek-r1',
+        'deepseek-r1-250120',
+        'deepseek-r1-250528',
+        'deepseek-v3',
+        'doubao-1-5-thinking-pro-250415',
+        'gemini-2.5-pro-exp-03-25',
+        'gpt-3.5-turbo',
+        'gpt-3.5-turbo-0125',
+        'gpt-4',
+        'gpt-4-1106-preview',
+        'gpt-4-turbo',
+        'gpt-4-turbo-preview',
+        'gpt-4.1',
+        'gpt-4.1-2025-04-14',
+        'gpt-4.1-mini',
+        'gpt-4.1-mini-2025-04-14',
+        'gpt-4o',
+        'gpt-4o-2024-05-13',
+        'gpt-4o-2024-08-06',
+        'gpt-4o-2024-11-20',
+        'gpt-4o-mini',
+        'gpt-4o-mini-2024-07-18',
+        'o1',
+        'o1-2024-12-17',
+        'o1-mini',
+        'o1-mini-2024-09-12',
+        'o3-mini',
+        'o4-mini',
+        'o4-mini-2025-04-16',
+        'qwen-long',
+        'qwen2.5-72b-instruct',
+        'qwen3-235b-a22b',
+        'qwen3-32b'
+      ])
+    );
+  }
+
+  /**
+   * Get model recommendations based on task type and requirements
+   */
+  static getModelRecommendations(taskType: string, requirements?: {
+    language?: 'chinese' | 'english' | 'multilingual';
+    priority?: 'cost' | 'speed' | 'quality';
+    complexity?: 'simple' | 'medium' | 'complex';
+  }): { recommended: string; alternatives: string[]; reason: string } {
+    const { language = 'multilingual', priority = 'quality', complexity = 'medium' } = requirements || {};
+
+    // Define task-specific model recommendations
+    const taskRecommendations: Record<string, any> = {
+      'web-search': {
+        primary: 'gemini-2.5-pro-exp-03-25',
+        alternatives: ['gpt-4o', 'claude-sonnet-4-20250514'],
+        reason: 'Gemini excels at web search and real-time information retrieval'
+      },
+      'coding': {
+        primary: complexity === 'complex' ? 'o1' : complexity === 'simple' ? 'o3-mini' : 'deepseek-r1',
+        alternatives: ['o1-mini', 'gpt-4o', 'deepseek-v3'],
+        reason: 'DeepSeek and O-series models are optimized for programming tasks'
+      },
+      'chinese-content': {
+        primary: priority === 'cost' ? 'deepseek-r1' : 'qwen3-235b-a22b',
+        alternatives: ['doubao-1-5-thinking-pro-250415', 'qwen-long', 'deepseek-v3'],
+        reason: 'Chinese-native models provide superior Chinese language understanding'
+      },
+      'analysis': {
+        primary: complexity === 'complex' ? 'claude-opus-4-20250514' : 'claude-sonnet-4-20250514',
+        alternatives: ['gpt-4.1', 'o1', 'deepseek-r1'],
+        reason: 'Claude models excel at detailed analysis and reasoning'
+      },
+      'creative-writing': {
+        primary: 'claude-opus-4-20250514',
+        alternatives: ['gpt-4o', 'claude-sonnet-4-20250514'],
+        reason: 'Claude Opus is renowned for creative and literary writing'
+      },
+      'math-science': {
+        primary: 'o1',
+        alternatives: ['o1-mini', 'o3-mini', 'deepseek-r1'],
+        reason: 'O-series models are specifically designed for mathematical and scientific reasoning'
+      },
+      'general': {
+        primary: priority === 'cost' ? 'gpt-4o-mini' : priority === 'speed' ? 'gpt-4o' : 'claude-sonnet-4-20250514',
+        alternatives: ['gpt-4o', 'deepseek-r1', 'claude-sonnet-4-20250514'],
+        reason: 'Balanced models suitable for various general-purpose tasks'
+      },
+      'long-context': {
+        primary: 'gpt-4.1',
+        alternatives: ['qwen-long', 'gemini-2.5-pro-exp-03-25'],
+        reason: 'These models support extensive context lengths for large documents'
+      }
+    };
+
+    // Apply language preferences
+    if (language === 'chinese') {
+      const chineseModels = ['deepseek-r1', 'qwen3-235b-a22b', 'doubao-1-5-thinking-pro-250415', 'qwen-long'];
+      const recommendation = taskRecommendations[taskType];
+      if (recommendation && !chineseModels.includes(recommendation.primary)) {
+        recommendation.primary = chineseModels[0];
+        recommendation.alternatives = chineseModels;
+        recommendation.reason += ' (optimized for Chinese language)';
+      }
+    }
+
+    return taskRecommendations[taskType] || taskRecommendations['general'];
+  }
+
+  /**
+   * Get detailed model information
+   */
+  static getModelInfo(modelName: string): ModelCapability | undefined {
+    return this.MODEL_CAPABILITIES[modelName];
+  }
+
+  /**
+   * List models by category
+   */
+  static getModelsByCategory(): Record<string, string[]> {
+    const categories: Record<string, string[]> = {};
+    
+    Object.entries(this.MODEL_CAPABILITIES).forEach(([modelName, info]) => {
+      if (!categories[info.family]) {
+        categories[info.family] = [];
+      }
+      categories[info.family].push(modelName);
+    });
+
+    return categories;
+  }
+
+  /**
+   * Get recommended model based on options provided
+   */
+  public async getModel(options: ModelOptions | undefined): Promise<string> {
+    if (!options?.model) {
+      // If no specific model requested, show recommendations
+      console.log('\n🔍 No model specified for APIZH provider. Available categories:');
+      console.log('💰 Cost-effective: gpt-4o-mini, deepseek-r1');
+      console.log('⭐ High-quality: gpt-4o, claude-sonnet-4-20250514');
+      console.log('🧠 Reasoning: o1, o1-mini, o3-mini');
+      console.log('🇨🇳 Chinese-optimized: deepseek-r1, qwen3-235b-a22b, doubao-1-5-thinking-pro-250415');
+      console.log('🌐 Web search: gemini-2.5-pro-exp-03-25');
+      console.log('📄 Long context: gpt-4.1, qwen-long');
+      console.log('\n💡 For task-specific recommendations, use:');
+      console.log('   vibe-tools apizh-models <task-type>');
+      console.log('   vibe-tools apizh-models categories');
+      console.log('\n✅ Using default: gpt-4o-mini\n');
+      
+      // Return default model
+      return 'gpt-4o-mini';
+    }
+
+    return super.getModel(options);
+  }
+
+  protected handleLargeTokenCount(tokenCount: number): { model?: string; error?: string } {
+    // APIZH routes to various models, limits depend on the underlying model.
+    const limit = 2_000_000; // Assuming a high limit for most models
+    if (tokenCount >= limit) {
+      return {
+        error:
+          `Repository content (${tokenCount} tokens) may be too large for the selected APIZH model (limit depends on underlying model, potentially ~${limit} tokens).\n` +
+          `Please reduce the context size by creating a '.repomixignore' file in your repository root and adding patterns for files/directories to exclude.\n` +
+          `You can also try:\n` +
+          `1. Selecting a model known to support larger contexts via the --model flag.\n` +
+          `2. Using a more specific query or the --subdir flag.`,
+      };
+    }
+    return {};
+  }
+
+  // APIZH API is OpenAI compatible, but web search support depends on the underlying model
+  async supportsWebSearch(
+    modelName: string
+  ): Promise<{ supported: boolean; model?: string; error?: string }> {
+    // Check if the model supports web search based on known capabilities
+    const webSearchSupportedModels = ['gemini-2.5-pro-exp-03-25'];
+    
+    if (webSearchSupportedModels.includes(modelName)) {
+      return {
+        supported: true,
+      };
+    }
+    
+    return {
+      supported: false,
+      model: 'gemini-2.5-pro-exp-03-25',
+      error: `Model ${modelName} does not support web search through APIZH. Try gemini-2.5-pro-exp-03-25 for web search capabilities.`,
+    };
+  }
+}
 // Factory function to create providers
 export function createProvider(
-  provider: 'gemini' | 'openai' | 'openrouter' | 'perplexity' | 'modelbox' | 'anthropic' | 'xai'
+  provider: 'gemini' | 'openai' | 'openrouter' | 'perplexity' | 'modelbox' | 'anthropic' | 'xai' | 'apizh' | 'apizh-coding' | 'apizh-chinese' | 'apizh-analysis' | 'apizh-creative' | 'apizh-math' | 'apizh-web' | 'apizh-reasoning' | 'apizh-cost'
 ): BaseModelProvider {
   switch (provider) {
     case 'gemini': {
@@ -2454,6 +2844,16 @@ export function createProvider(
       return new AnthropicProvider();
     case 'xai':
       return new XAIProvider();
+    case 'apizh':
+    case 'apizh-coding':
+    case 'apizh-chinese':
+    case 'apizh-analysis':
+    case 'apizh-creative':
+    case 'apizh-math':
+    case 'apizh-web':
+    case 'apizh-reasoning':
+    case 'apizh-cost':
+      return new APIZHProvider();
     default:
       throw exhaustiveMatchGuard(
         provider,

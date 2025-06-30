@@ -9,7 +9,16 @@ export type Provider =
   | 'perplexity'
   | 'modelbox'
   | 'anthropic'
-  | 'xai';
+  | 'xai'
+  | 'apizh'
+  | 'apizh-coding'
+  | 'apizh-chinese'
+  | 'apizh-analysis'
+  | 'apizh-creative'
+  | 'apizh-math'
+  | 'apizh-web'
+  | 'apizh-reasoning'
+  | 'apizh-cost';
 
 // Zod schema for reasoning effort
 export const reasoningEffortSchema = z.enum(['low', 'medium', 'high']);
@@ -138,6 +147,13 @@ export interface Config {
     defaultFormat?: 'markdown' | 'json' | 'text';
     maxRetries?: number;
     retryDelay?: number;
+  };
+  nix?: {
+    provider?: Provider;
+    model?: string;
+    maxTokens?: number;
+    defaultProjectTypes?: string[];
+    autoDetect?: boolean;
   };
 }
 

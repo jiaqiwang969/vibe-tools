@@ -105,6 +105,7 @@ The \`search\` command helps you discover servers in the MCP Marketplace and on 
 - \`vibe-tools youtube\` analyzes YouTube videos to generate summaries, transcripts, implementation plans, or custom analyses
 - \`vibe-tools browser\` is useful for testing and debugging web apps and uses Stagehand
 - \`vibe-tools mcp\` enables interaction with specialized tools through MCP servers (e.g., for Git operations, file system tasks, or custom tools)
+- \`vibe-tools nix\` provides AI-powered Nix Flakes management for development environments and package management. Use natural language to describe any nix-related task.
 - **URLS:** For any specific URL (documentation, article, reference, spec, GitHub repo, etc.), ALWAYS use a command with the \`--with-doc=<url>\` parameter rather than the \`web\` command. Examples: \`vibe-tools repo "How should I implement this feature based on the spec?" --with-doc=https://example.com/spec.pdf\` or \`vibe-tools ask "What does this document say about authentication?" --with-doc=https://example.com/auth-doc.html\`
 - When implementing features based on documentation, specifications, or any external content, always use the \`--with-doc=<url>\` flag instead of built-in web search. For example: \`vibe-tools plan "Implement login page according to specs" --with-doc=https://example.com/specs.pdf\` or \`vibe-tools repo "How should I implement this feature?" --with-doc=https://example.com/feature-spec.md\`.
 - When a user provides a specific URL for documentation or reference material, always use the \`--with-doc=<url>\` flag with that URL rather than attempting to search for or summarize the content independently. This ensures the exact document is used as context.
@@ -175,6 +176,15 @@ If people say "ask Gemini" or "ask Perplexity" or "ask Stagehand" they mean to u
 
 \`vibe-tools xcode lint\` - Run static analysis on the Xcode project to find and fix issues.
 
+**Nix Flake Management:**
+\`vibe-tools nix "<your question or task>"\` - AI-powered Nix Flakes assistant that handles any Nix-related task using natural language (e.g., \`vibe-tools nix "为Python项目创建flake.nix文件"\`)
+Note: Nix flakes require files to be git tracked. The assistant will automatically detect and fix git tracking issues.
+
+**Nix Command Options:**
+--provider=<provider>: AI provider to use for nix assistance (defaults to 'apizh')
+--model=<model>: AI model to use (defaults to 'gpt-4.1-2025-04-14' for nix tasks)
+--max-tokens=<number>: Maximum tokens for AI responses (defaults to 6000)
+
 **Additional Notes:**
 - For detailed information, see \`node_modules/vibe-tools/README.md\` (if installed locally).
 - Configuration is in \`vibe-tools.config.json\` (or \`~/.vibe-tools/config.json\`).
@@ -184,6 +194,7 @@ If people say "ask Gemini" or "ask Perplexity" or "ask Stagehand" they mean to u
 - repo has a limit of 2M tokens of context. The context can be reduced by filtering out files in a .repomixignore file.
 - problems running browser commands may be because playwright is not installed. Recommend installing playwright globally.
 - MCP commands require \`ANTHROPIC_API_KEY\` or \`OPENROUTER_API_KEY\`
+- **Nix Configuration:** Configure nix command behavior in \`vibe-tools.config.json\` with a \`nix\` section. Example: \`{"nix": {"provider": "apizh", "model": "gpt-4.1-2025-04-14", "maxTokens": 6000}}\`.
 - **Remember:** You're part of a team of superhuman expert AIs. Work together to solve complex problems.
 - **Repomix Configuration:** You can customize which files are included/excluded during repository analysis by creating a \`repomix.config.json\` file in your project root. This file will be automatically detected by \`repo\`, \`plan\`, and \`doc\` commands.
 

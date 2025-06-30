@@ -577,8 +577,11 @@ async function main() {
   // --- Start Update Check Block ---
   let shouldContinueExecution = true;
 
-  try {
-    const versionInfo = await checkPackageVersion();
+  // Check if update check is explicitly enabled (默认禁用自动更新)
+  if (process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === '1' || process.env.VIBE_TOOLS_ENABLE_UPDATE_CHECK === 'true') {
+    consola.debug('Update check enabled via VIBE_TOOLS_ENABLE_UPDATE_CHECK environment variable');
+    try {
+      const versionInfo = await checkPackageVersion();
     if (versionInfo.isOutdated && versionInfo.latest) {
       // Inform the user about the automatic update
       consola.info(
@@ -734,9 +737,13 @@ async function main() {
         shouldContinueExecution = true; // Allow original command to run
       });
     }
-  } catch (error) {
-    consola.warn('Could not check for vibe-tools updates:', error);
-    // Continue execution even if update check fails
+    } catch (error) {
+      consola.warn('Could not check for vibe-tools updates:', error);
+      // Continue execution even if update check fails
+    }
+  } else {
+    // Default behavior: Skip update check (用户可通过 VIBE_TOOLS_ENABLE_UPDATE_CHECK=1 启用更新检查)
+    consola.debug('Update check disabled by default. Set VIBE_TOOLS_ENABLE_UPDATE_CHECK=1 to enable automatic updates.');
   }
   // --- End Update Check Block ---
 

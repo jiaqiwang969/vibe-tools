@@ -582,6 +582,8 @@ export class JsonInstallCommand implements Command {
           `  ${colors.green('vibe-tools repo')} ${colors.white('"Explain this codebase"')}`,
           `  ${colors.green('vibe-tools web')} ${colors.white('"Search for something online"')}`,
           `  ${colors.green('vibe-tools plan')} ${colors.white('"Create implementation plan"')}`,
+          `  ${colors.green('vibe-tools doc')} ${colors.white('"Think about a system"')}`,
+          `  ${colors.green('vibe-tools nix')} ${colors.white('"Manage Nix packages"')}`,
         ].join('\n'),
       });
     } catch (error) {

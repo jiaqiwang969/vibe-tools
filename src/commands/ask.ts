@@ -46,21 +46,63 @@ export class AskCommand implements Command {
     }
 
     // Use provided model or get default model for the provider
-    let model = options?.model;
+    let model: string = options?.model || '';
     if (!model) {
-      // Default models for each provider
-      const defaultModels: Record<Provider, string> = {
-        openai: 'gpt-4.1',
-        anthropic: 'claude-sonnet-4-20250514',
-        gemini: 'gemini-2.5-pro',
-        perplexity: 'sonar-pro',
-        openrouter: 'openai/gpt-4.1',
-        modelbox: 'openai/gpt-4.1',
-        xai: 'grok-3-latest',
-      };
+      // For APIZH provider (base), let the provider handle model selection to show recommendations
+      if (providerName === 'apizh') {
+        // Create the provider instance early to use its model selection
+        const tempProvider = createProvider(providerName);
+        const tempOptions: ModelOptions = {
+          model: '', // Empty to trigger provider's model recommendation
+          maxTokens: options?.maxTokens || defaultMaxTokens,
+          debug: options?.debug,
+        };
+        // Type assertion since we know APIZH provider has getModel method
+        model = (await (tempProvider as any).getModel(tempOptions)) || 'gpt-4o-mini';
+      } else if (providerName.startsWith('apizh-')) {
+        // For specialized APIZH variants, use the pre-configured model
+        const apizhModels: Record<string, string> = {
+          'apizh-coding': 'claude-opus-4-20250514-thinking',
+          'apizh-chinese': 'qwen3-235b-a22b',
+          'apizh-analysis': 'claude-sonnet-4-20250514',
+          'apizh-creative': 'claude-opus-4-20250514',
+          'apizh-math': 'o1',
+          'apizh-web': 'gemini-2.5-pro-exp-03-25',
+          'apizh-reasoning': 'o1-mini',
+          'apizh-cost': 'gpt-4o-mini',
+        };
+        
+        model = apizhModels[providerName] || 'gpt-4o-mini';
+        
+        // Show which specialized configuration is being used
+        const taskNames: Record<string, string> = {
+          'apizh-coding': '编程和代码生成',
+          'apizh-chinese': '中文内容处理',
+          'apizh-analysis': '数据分析和研究',
+          'apizh-creative': '创意写作',
+          'apizh-math': '数学和科学推理',
+          'apizh-web': '网络搜索',
+          'apizh-reasoning': '逻辑推理',
+          'apizh-cost': '成本效益优化',
+        };
+        
+        console.log(`🎯 Using ${providerName} (${taskNames[providerName] || '专用配置'}) with model: ${model}`);
+      } else {
+        // Default models for other providers
+        const otherProviderModels: Record<string, string> = {
+          openai: 'gpt-4.1',
+          anthropic: 'claude-sonnet-4-20250514',
+          gemini: 'gemini-2.5-pro',
+          perplexity: 'sonar-pro',
+          openrouter: 'openai/gpt-4.1',
+          modelbox: 'openai/gpt-4.1',
+          xai: 'grok-3-latest',
+          apizh: 'gpt-4o-mini',
+        };
 
-      model = defaultModels[providerName] || 'gpt-4.1';
-      console.log(`No model specified, using default model for ${providerName}: ${model}`);
+        model = otherProviderModels[providerName] || 'gpt-4.1';
+        console.log(`No model specified, using default model for ${providerName}: ${model}`);
+      }
     }
 
     // Create the provider instance

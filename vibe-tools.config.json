@@ -1,21 +1,21 @@
 {
   "web": {
-    "provider": "perplexity",
-    "model": "sonar-pro"
+    "provider": "apizh-web",
+    "model": "gemini-2.5-pro-exp-03-25"
   },
   "plan": {
-    "fileProvider": "gemini",
-    "thinkingProvider": "anthropic",
-    "fileModel": "gemini-2.5-flash",
+    "fileProvider": "apizh-cost",
+    "thinkingProvider": "apizh-creative",
+    "fileModel": "gpt-4o-mini",
     "thinkingModel": "claude-opus-4-20250514"
   },
   "repo": {
-    "provider": "gemini",
-    "model": "gemini-2.5-flash"
+    "provider": "apizh-analysis",
+    "model": "claude-sonnet-4-20250514"
   },
   "doc": {
-    "provider": "gemini",
-    "model": "gemini-2.5-pro"
+    "provider": "apizh-analysis",
+    "model": "claude-sonnet-4-20250514"
   },
   "ide": "cursor"
 }
