@@ -701,7 +701,7 @@ export class InstallCommand implements Command {
           options: [
             {
               value: `${APIZH_AGENT_ROLES.coding.provider}:${APIZH_AGENT_ROLES.coding.model}`,
-              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.coding.description}`,
+              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.coding.description} - ${APIZH_AGENT_ROLES.coding.model}`,
               hint: 'recommended',
             },
             {
@@ -737,7 +737,7 @@ export class InstallCommand implements Command {
             options: [
               {
                 value: `${APIZH_AGENT_ROLES['web-search'].provider}:${APIZH_AGENT_ROLES['web-search'].model}`,
-                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['web-search'].description}`,
+                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['web-search'].description} - ${APIZH_AGENT_ROLES['web-search'].model}`,
                 hint: 'recommended',
               },
               { value: 'perplexity:sonar-pro', label: 'Perplexity Sonar Pro', hint: 'classic' },
@@ -758,7 +758,7 @@ export class InstallCommand implements Command {
           options: [
             {
               value: `${APIZH_AGENT_ROLES.tooling.provider}:${APIZH_AGENT_ROLES.tooling.model}`,
-              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.tooling.description}`,
+              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.tooling.description} - ${APIZH_AGENT_ROLES.tooling.model}`,
               hint: 'recommended',
             },
             {
@@ -788,7 +788,7 @@ export class InstallCommand implements Command {
             options: [
               {
                 value: `${APIZH_AGENT_ROLES['large-context'].provider}:${APIZH_AGENT_ROLES['large-context'].model}`,
-                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['large-context'].description}`,
+                label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES['large-context'].description} - ${APIZH_AGENT_ROLES['large-context'].model}`,
                 hint: 'recommended',
               },
               {
@@ -812,8 +812,8 @@ export class InstallCommand implements Command {
           type: 'select',
           options: [
             {
-              value: 'apizh:gpt-4.1-2025-04-14',
-              label: '🇨🇳 APIZH 🛠️ Nix专家 - Flake配置、环境管理专家',
+              value: `${APIZH_AGENT_ROLES.nix.provider}:${APIZH_AGENT_ROLES.nix.model}`,
+              label: `🇨🇳 APIZH ${APIZH_AGENT_ROLES.nix.description} - ${APIZH_AGENT_ROLES.nix.model}`,
               hint: 'recommended',
             },
             {
@@ -832,7 +832,7 @@ export class InstallCommand implements Command {
               label: 'OpenRouter - Claude 4 Sonnet',
             },
           ],
-          initial: 'apizh:gpt-4.1-2025-04-14',
+          initial: `${APIZH_AGENT_ROLES.nix.provider}:${APIZH_AGENT_ROLES.nix.model}`,
         });
 
         // Collect all selected options into a config object
@@ -848,6 +848,10 @@ export class InstallCommand implements Command {
 
       // Create a more compact and readable display of the configuration
       const formatProviderInfo = (provider: string, model: string) => {
+        // Safety check for undefined values
+        if (!provider || !model) {
+          return `${colors.red('Unknown provider/model')}`;
+        }
         // Trim the provider prefix from the model name if it exists
         const modelDisplay = model.includes('/') ? model.split('/').pop() : model;
         return `${colors.cyan(provider.charAt(0).toUpperCase() + provider.slice(1))} ${colors.gray('→')} ${colors.green(modelDisplay || model)}`;
@@ -858,6 +862,10 @@ export class InstallCommand implements Command {
           if (key === 'ide') return `IDE: ${colors.magenta(String(value))}`;
           if (!value) return null; // Skip undefined values
           const configVal = value as { provider: string; model: string };
+          // Safety check for configVal properties
+          if (!configVal || !configVal.provider || !configVal.model) {
+            return null; // Skip invalid configurations
+          }
           // Format key as "Coding:" instead of "coding:"
           const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
           return `${colors.yellow(formattedKey)}: ${formatProviderInfo(configVal.provider, configVal.model)}`;

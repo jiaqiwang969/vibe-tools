@@ -18,7 +18,8 @@ export type Provider =
   | 'apizh-math'
   | 'apizh-web'
   | 'apizh-reasoning'
-  | 'apizh-cost';
+  | 'apizh-cost'
+  | 'apizh-nix';
 
 // Zod schema for reasoning effort
 export const reasoningEffortSchema = z.enum(['low', 'medium', 'high']);

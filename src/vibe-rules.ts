@@ -194,7 +194,7 @@ Note: Nix flakes require files to be git tracked. The assistant will automatical
 - repo has a limit of 2M tokens of context. The context can be reduced by filtering out files in a .repomixignore file.
 - problems running browser commands may be because playwright is not installed. Recommend installing playwright globally.
 - MCP commands require \`ANTHROPIC_API_KEY\` or \`OPENROUTER_API_KEY\`
-- **Nix Configuration:** Configure nix command behavior in \`vibe-tools.config.json\` with a \`nix\` section. Example: \`{"nix": {"provider": "apizh", "model": "gpt-4.1-2025-04-14", "maxTokens": 6000}}\`.
+- **Nix Configuration:** Configure nix command behavior in \`vibe-tools.config.json\` with a \`nix\` section. Example: \`{"nix": {"provider": "apizh-nix", "model": "gpt-4.1-2025-04-14", "maxTokens": 6000}}\`.
 - **Remember:** You're part of a team of superhuman expert AIs. Work together to solve complex problems.
 - **Repomix Configuration:** You can customize which files are included/excluded during repository analysis by creating a \`repomix.config.json\` file in your project root. This file will be automatically detected by \`repo\`, \`plan\`, and \`doc\` commands.
 

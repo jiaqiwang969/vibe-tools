@@ -16,7 +16,7 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   modelbox: 'google/gemini-2.5-pro', // largest context window (1M tokens) so best chance of working
   xai: 'grok-3-latest',
   apizh: 'gpt-4o-mini', // Default model for Chinese API relay service
-  'apizh-coding': 'claude-opus-4-20250514-thinking', // 编程和代码生成 - 最强编程模型
+  'apizh-coding': 'o3', // 编程和代码生成 - 最强编程模型
   'apizh-chinese': 'qwen3-235b-a22b', // 中文内容处理
   'apizh-analysis': 'claude-sonnet-4-20250514', // 数据分析和研究
   'apizh-creative': 'claude-opus-4-20250514', // 创意写作
@@ -24,6 +24,7 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   'apizh-web': 'gemini-2.5-pro-exp-03-25', // 网络搜索
   'apizh-reasoning': 'o1-mini', // 逻辑推理
   'apizh-cost': 'gpt-4o-mini', // 成本效益优化
+  'apizh-nix': 'gpt-4.1-2025-04-14', // Nix包管理
 };
 
 // Task-specific model recommendations for APIZH provider
@@ -51,7 +52,7 @@ export const APIZH_AGENT_ROLES: Record<
 > = {
   coding: {
     provider: 'apizh-coding',
-    model: 'claude-opus-4-20250514-thinking', // 最强的编程模型，专长代码生成和架构设计
+    model: 'o3', // 最强的编程模型，专长代码生成和架构设计
     description: '🛠️ 编程专家 - 代码生成、调试、架构设计专家',
   },
   'web-search': {
@@ -68,6 +69,11 @@ export const APIZH_AGENT_ROLES: Record<
     provider: 'apizh-reasoning',
     model: 'gemini-2.5-pro-exp-03-25', // 替代Gemini Flash 2.5，大上下文处理
     description: '📚 大上下文专家 - 系统分析、长文档处理、战略规划',
+  },
+  nix: {
+    provider: 'apizh-nix',
+    model: 'gpt-4.1-2025-04-14', // Nix包管理专家
+    description: '🛠️ Nix专家 - Flake配置、环境管理专家',
   },
 };
 
@@ -228,6 +234,11 @@ export function getAllProviders(): ProviderInfo[] {
       provider: 'apizh-cost',
       available: isApizhAvailable,
       defaultModel: DEFAULT_MODELS['apizh-cost'],
+    },
+    {
+      provider: 'apizh-nix',
+      available: isApizhAvailable,
+      defaultModel: DEFAULT_MODELS['apizh-nix'],
     },
   ];
 }

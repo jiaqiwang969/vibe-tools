@@ -1,4 +1,4 @@
-import type { Config } from '../types';
+import type { Config, Provider } from '../types';
 import type { VideoAnalysisOptions } from '../types';
 import { loadConfig, loadEnv } from '../config';
 import OpenAI, { BadRequestError } from 'openai';
@@ -2849,25 +2849,7 @@ export class APIZHProvider extends OpenAIBase {
   }
 }
 // Factory function to create providers
-export function createProvider(
-  provider:
-    | 'gemini'
-    | 'openai'
-    | 'openrouter'
-    | 'perplexity'
-    | 'modelbox'
-    | 'anthropic'
-    | 'xai'
-    | 'apizh'
-    | 'apizh-coding'
-    | 'apizh-chinese'
-    | 'apizh-analysis'
-    | 'apizh-creative'
-    | 'apizh-math'
-    | 'apizh-web'
-    | 'apizh-reasoning'
-    | 'apizh-cost'
-): BaseModelProvider {
+export function createProvider(provider: Provider): BaseModelProvider {
   switch (provider) {
     case 'gemini': {
       const apiKey = process.env.GEMINI_API_KEY;
@@ -2907,6 +2889,7 @@ export function createProvider(
     case 'apizh-web':
     case 'apizh-reasoning':
     case 'apizh-cost':
+    case 'apizh-nix':
       return new APIZHProvider();
     default:
       throw exhaustiveMatchGuard(

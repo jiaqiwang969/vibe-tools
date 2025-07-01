@@ -48,6 +48,7 @@ export const VALID_PROVIDERS = [
   'Apizh-web',
   'Apizh-reasoning',
   'Apizh-cost',
+  'Apizh-nix',
 ];
 export const VALID_PROVIDERS_LOWERCASE = VALID_PROVIDERS.map((p) => p.toLowerCase());
 
@@ -443,7 +444,7 @@ export function getDefaultConfigForNonInteractive(): {
       model: 'gemini-2.5-pro',
     },
     nix: {
-      provider: 'apizh' as Provider,
+      provider: 'apizh-nix' as Provider,
       model: 'gpt-4.1-2025-04-14',
     },
   };

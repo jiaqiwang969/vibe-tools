@@ -62,7 +62,7 @@ export class AskCommand implements Command {
       } else if (providerName.startsWith('apizh-')) {
         // For specialized APIZH variants, use the pre-configured model
         const apizhModels: Record<string, string> = {
-          'apizh-coding': 'claude-opus-4-20250514-thinking',
+          'apizh-coding': 'o3',
           'apizh-chinese': 'qwen3-235b-a22b',
           'apizh-analysis': 'claude-sonnet-4-20250514',
           'apizh-creative': 'claude-opus-4-20250514',
@@ -70,6 +70,7 @@ export class AskCommand implements Command {
           'apizh-web': 'gemini-2.5-pro-exp-03-25',
           'apizh-reasoning': 'o1-mini',
           'apizh-cost': 'gpt-4o-mini',
+          'apizh-nix': 'gpt-4.1-2025-04-14',
         };
 
         model = apizhModels[providerName] || 'gpt-4o-mini';
@@ -84,6 +85,7 @@ export class AskCommand implements Command {
           'apizh-web': '网络搜索',
           'apizh-reasoning': '逻辑推理',
           'apizh-cost': '成本效益优化',
+          'apizh-nix': 'Nix包管理',
         };
 
         console.log(
