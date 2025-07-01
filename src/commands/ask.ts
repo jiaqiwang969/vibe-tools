@@ -25,8 +25,8 @@ export class AskCommand implements Command {
       );
     }
 
-    // Use provided provider or default to the first available one
-    const providerName = options?.provider || availableProviders[0].provider;
+    // Use provided provider, then config provider, then default to the first available one
+    const providerName = options?.provider || (this.config as any).apizh?.provider || 'apizh';
 
     // Check if the requested provider is available
     const providerInfo = getAllProviders().find((p) => p.provider === providerName);
